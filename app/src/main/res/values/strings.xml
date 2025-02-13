@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">SpanDet</string>
+    <string name="prompt_koleksi">Anda belum memiliki koleksi Deteksi!</string>
+    <string name="koleksi_create">Buat koleksi</string>
+    <string name="prompt_collection_create">Berikan nama untuk koleksi deteksi anda</string>
+    <string name="koleksi_name_placeholder">nama_koleksi</string>
+    <string name="camera">Foto Baru +</string>
+    <string name="gallery">Dari Galeri</string>
+    <string name="start_detect">Mulai Deteksi</string>
+    <string name="prompt_result_empty">Anda belum memiliki hasil deteksi</string>
+    <string name="new_detection">"Deteksi Gambar "</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="prompt_process_empty">Anda belum menambahkan gambar</string>
+
+    <string name="content_integrity_3">Cracks (Retak): Celah atau retakan yang terjadi pada ujung bead las, yang bisa menjadi titik lemah pada sambungan. Retak dapat terjadi karena pendinginan yang terlalu cepat atau tegangan yang berlebihan pada sambungan.</string>
+    <string name="content_integrity_1">Porosity (Porositas): Lubang-lubang kecil yang terbentuk dalam logam las akibat gas yang terperangkap selama solidifikasi. Porositas mengurangi kekuatan dan ketahanan korosi pada sambungan las.</string>
+    <string name="content_integrity_4">Burn-Through (Tembus bakar): Penetrasi berlebihan dari logam las yang menyebabkan lubang pada logam dasar. Ini biasanya disebabkan oleh panas yang terlalu tinggi atau kecepatan pengelasan yang terlalu lambat.</string>
+    <string name="content_integrity_2">Inclusions (Inklusi): Material asing seperti slag (terak) atau tungsten yang terperangkap dalam logam las. Inklusi dapat menyebabkan titik lemah pada sambungan las dan mengurangi kekuatan mekanisnya.</string>
+    <string name="content_geometry_1">Undercut: Alur atau cekungan yang terbentuk di logam dasar di sepanjang ujung las atau akar las yang tidak terisi oleh logam las. Undercut dapat mengurangi ketahanan sambungan terhadap beban mekanis dan meningkatkan risiko retak.</string>
+    <string name="content_geometry_2">Overlap: Logam las yang mengalir di atas permukaan logam dasar tanpa terikat dengan baik. Overlap dapat menyebabkan kekuatan sambungan berkurang dan menciptakan ketidakrataan pada permukaan las.</string>
+    <string name="content_geometry_3">Excess Reinforcement (Penguatan Berlebih): Penggunaan logam pengisi yang terlalu banyak sehingga menyebabkan ketebalan las berlebih di atas permukaan sambungan. Ini dapat mengakibatkan stres internal dan deformasi setelah pendinginan.</string>
+    <string name="content_nonpen_2">Incomplete Penetration (Penetrasi Tidak Lengkap): Logam las yang gagal menembus seluruh ketebalan sambungan. Ini dapat menyebabkan sambungan menjadi lemah dan tidak memenuhi standar kekuatan yang diperlukan.</string>
+    <string name="content_nonpen_3">Lack of Fusion (Kurangnya Peleburan): Gagalnya logam las untuk melebur dengan benar dengan logam dasar atau bead las sebelumnya. Ini dapat menyebabkan titik-titik lemah pada sambungan dan meningkatkan risiko kegagalan struktur.</string>
+    <string name="content_nonpen_1">Underfill (Pengisian Tidak Lengkap): Kegagalan untuk mengisi sepenuhnya celah sambungan dengan material pengisi. Underfill dapat menyebabkan celah pada sambungan yang dapat mempengaruhi kekuatan dan ketahanan terhadap beban.</string>
+    <string name="content_adjacent">Spatter: Tetesan kecil logam cair atau slag yang terlempar dari kolam las dan mengeras di permukaan benda kerja. Spatter dapat mengganggu kualitas visual dan permukaan benda kerja, serta dapat memerlukan pembersihan tambahan setelah proses pengelasan.</string>
+    <string name="content_postproc_1">Burrs (Beram): Tepi tajam atau tonjolan yang tertinggal pada las setelah proses pemotongan atau pemesinan. Beram dapat memerlukan penghilangan tambahan karena dapat mengganggu estetika dan keamanan komponen.</string>
+    <string name="content_postproc_2">Improper End Finishing (Penyelesaian Ujung yang Tidak Tepat): Permukaan akhir las yang kasar atau tidak rata, yang dapat mempengaruhi kesesuaian komponen dalam aplikasi akhir.</string>
+    <string name="content_postproc_3">Scratches (Goresan): Kerusakan permukaan yang disebabkan oleh gesekan mekanis setelah proses pengelasan. Goresan dapat mengurangi estetika dan dalam beberapa kasus, dapat memulai titik korosi.</string>
+    <string name="content_postproc_4">Dents (Penyok): Tekanan atau benturan yang menyebabkan cekungan atau lekukan pada permukaan las. Penyok dapat mempengaruhi kekuatan struktural dan estetika sambungan las.</string>
+    <string name="content_empty">Tidak ada benda kerja terdeteksi. Silakan pastikan benda kerja telah ditempatkan dengan benar sebelum melanjutkan pemeriksaan. \n Mohon hapus gambar ini dan lakukan deteksi ulang</string>
+    <string name="content_nodefect">Tidak ditemukan cacat pada benda kerja. Benda kerja telah diperiksa dan dinyatakan dalam kondisi baik tanpa adanya kerusakan atau ketidaksempurnaan.</string>
+    <string name="deskripsi_text">Deskripsi</string>
+</resources>

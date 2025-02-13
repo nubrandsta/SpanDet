@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="brand">#FF6C00</color>
+    <color name="brand_500">#FFBD00</color>
+    <color name="brand_400">#FFC723</color>
+    <color name="brand_300">#FFD24C</color>
+    <color name="brand_200">#FFDE80</color>
+    <color name="brand_100">#FFEBB2</color>
+
+    <color name="complementary">#0095FF</color>
+    <color name="complementary_400">#36A4FF</color>
+    <color name="complementary_300">#5EB5FF</color>
+    <color name="complementary_200">#8DCAFF</color>
+    <color name="complementary_100">#BADEFF</color>
+
+    <color name="background">#FFFFFF</color>
+    <color name="background_elevated">#DAF5F5F5</color>
+    <color name="background_dark">#99F5F5F5</color>
+
+    <color name="grey_900">#FF212121</color>
+    <color name="grey_800">#FF424242</color>
+    <color name="grey_700">#FF616161</color>
+    <color name="grey_600">#FF757575</color>
+    <color name="grey_500">#FF9E9E9E</color>
+    <color name="grey_400">#FFBDBDBD</color>
+    <color name="grey_300">#FFE0E0E0</color>
+    <color name="grey_200">#FFEEEEEE</color>
+
+    <color name="danger">#FF0000</color>
+    <color name="warning">#FFA500</color>
+    <color name="success">#008000</color>
+
+    <color name="adjacent">#83A600</color>
+    <color name="integrity">#FF9130</color>
+    <color name="geometry">#A600FF</color>
+    <color name="postproc">#2045FF</color>
+    <color name="nonpen">#FF0000 </color>
+
+    <color name="primary_orange">#d89a41</color>
+    <color name="orange_400">#e5af66</color>
+    <color name="orange_300">#f2c48c</color>
+    <color name="orange_200">#ffd9b2</color>
+    <color name="orange_100">#ffeeda</color>
+
+    <color name="primary_green">#538e4d</color>
+    <color name="green_500">#64a060</color>
+    <color name="green_400">#75b273</color>
+    <color name="green_300">#96c598</color>
+    <color name="green_200">#b7d9bd</color>
+    <color name="green_100">#d9ede2</color>
+
+    <color name="primary_blue">#27b5d1</color>
+    <color name="blue_400">#4cc4db</color>
+    <color name="blue_300">#72d3e5</color>
+    <color name="blue_200">#98e2ef</color>
+    <color name="blue_100">#bff1f9</color>
+
+    <color name="primary_red">#f15e5b</color>
+    <color name="red_400">#f47d7b</color>
+    <color name="red_300">#f79c9a</color>
+    <color name="red_200">#fabad9</color>
+    <color name="red_100">#fdd9d8</color>
+
+</resources>

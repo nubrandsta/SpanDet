@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.stti.spandet.databinding.ActivitySplashBinding
+import com.stti.spandet.spandet.LoginActivity
 import com.stti.spandet.ui.main.MainActivity
 
 class SplashActivity : AppCompatActivity() {
@@ -33,7 +34,7 @@ class SplashActivity : AppCompatActivity() {
 //        }
 
         Handler(Looper.getMainLooper()).postDelayed({
-                val intent = Intent(this, MainActivity::class.java)
+                val intent = Intent(this, LoginActivity::class.java)
                 finish()
                 startActivity(intent)
         }, 3000L)

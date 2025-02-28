@@ -32,6 +32,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LasScan">
         <activity
+            android:name=".spandet.HomeActivity"
+            android:exported="false" />
+        <activity
             android:name=".spandet.LoginActivity"
             android:exported="false" />
 

@@ -13,28 +13,42 @@
         android:layout_height="64dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
-        android:src="@drawable/ic_folder"
+        android:src="@drawable/ic_banner"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintVertical_bias="0.0"
-        app:tint="@color/brand" />
+        app:tint="@color/primary_red" />
 
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:layout_marginStart="24dp"
         android:text="Koleksi"
-        android:textSize="18sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintVertical_bias="0.0"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/iv_logo"
         app:layout_constraintTop_toTopOf="@id/iv_logo" />
+
+    <TextView
+        android:id="@+id/tv_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginStart="24dp"
+        android:text="Date"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iv_logo"
+        app:layout_constraintTop_toBottomOf="@id/tv_title" />
 
     <TextView
         android:id="@+id/tv_subheading"
@@ -45,6 +59,7 @@
         android:text="Hasil Deteksi"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -58,7 +73,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:background="@color/black"
-        app:layout_constraintTop_toBottomOf="@+id/tv_subheading" />
+        app:layout_constraintTop_toBottomOf="@+id/iv_logo" />
 
     <LinearLayout
         android:id="@+id/empty_prompt"
@@ -117,7 +132,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
-        android:backgroundTint="@color/brand"
+        android:backgroundTint="@color/primary_red"
         android:src="@drawable/ic_add_photo"
         app:fabCustomSize="72dp"
         app:tint="@color/white"
@@ -134,6 +149,7 @@
         android:background="@drawable/button_tertiary"
         android:backgroundTint="@color/white"
         android:src="@drawable/ic_note"
+        android:visibility="gone"
         app:fabCustomSize="72dp"
         app:tint="@color/success"
         app:maxImageSize="42dp"

@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.poixl)
 //    implementation(libs.xlschemas)
     implementation(libs.xmlbeans)
+    implementation(libs.play.services.location)
 
 
 

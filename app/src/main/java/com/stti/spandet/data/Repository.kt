@@ -37,12 +37,40 @@ class Repository(private val context: Context) {
     suspend fun scanCollectionsDir(): List<Collection> = withContext(Dispatchers.IO) {
         val collectionsDir = checkForCollectionsDir()
         if (collectionsDir != null && collectionsDir.exists()) {
-            val directories = collectionsDir.listFiles()?.filter { it.isDirectory }
-            Log.d(TAG, "Found directories: ${directories?.map { it.name }}")
+            val directories = collectionsDir.listFiles()?.filter { dir ->
+                dir.isDirectory && File(dir, "image").listFiles()?.isNotEmpty() == true
+            }
+
+            Log.d(TAG, "Found non-empty directories: ${directories?.map { it.name }}")
+
             directories?.map { dir ->
                 val name = dir.name
                 val imgCount = File(dir, "image").listFiles()?.size ?: 0
-                Collection(name, imgCount)
+                val metadataFile = File(dir, "metadata.json")
+
+                val location = if (metadataFile.exists()) {
+                    val metadataJson = JSONObject(metadataFile.readText())
+                    metadataJson.optString("location", "Unknown") // Default to "Unknown" if missing
+                } else {
+                    "Unknown"
+                }
+
+                val lat = if (metadataFile.exists()) {
+                    val metadataJson = JSONObject(metadataFile.readText())
+                    metadataJson.optDouble("lat", 0.0) // Default to 0.0 if missing
+                } else {
+                    0.0
+
+                }
+
+                val lon = if (metadataFile.exists()) {
+                    val metadataJson = JSONObject(metadataFile.readText())
+                    metadataJson.optDouble("lon", 0.0) // Default to 0.0 if missing
+                } else {
+                    0.0
+                }
+
+                Collection(name, imgCount, location, lat, lon)  // Include location in Collection model
             } ?: emptyList()
         } else {
             Log.d(TAG, "Collections directory does not exist.")
@@ -50,8 +78,31 @@ class Repository(private val context: Context) {
         }
     }
 
+    suspend fun getCollectionMetadata(collectionName: String): Collection? = withContext(Dispatchers.IO) {
+        val collectionsDir = checkForCollectionsDir()
+        if (collectionsDir != null && collectionsDir.exists()) {
+            val collectionDir = File(collectionsDir, collectionName)
+            val metadataFile = File(collectionDir, "metadata.json")
+
+            if (collectionDir.exists() && collectionDir.isDirectory && metadataFile.exists()) {
+                val metadataJson = JSONObject(metadataFile.readText())
+                val name = metadataJson.optString("name", collectionName)
+                val location = metadataJson.optString("locationString", "Unknown")
+                val lat = metadataJson.optDouble("lat", 0.0)
+                val lon = metadataJson.optDouble("lon", 0.0)
+                val imgCount = File(collectionDir, "image").listFiles()?.size ?: 0
+
+                return@withContext Collection(name, imgCount, location, lat, lon)
+            } else {
+                Log.d(TAG, "Collection $collectionName or its metadata.json does not exist.")
+            }
+        }
+        return@withContext null
+    }
+
+
     // Create a new collection directory along with 'image' and 'result' subdirectories
-    fun createCollectionDir(name: String): Boolean {
+    fun createCollectionDir(name: String, locationString: String="none", lat: Double=0.0, lon: Double=0.0): Boolean {
         val collectionsDir = checkForCollectionsDir()
         if (collectionsDir == null) {
             Log.e(TAG, "Cannot create collection $name: Collections directory does not exist and could not be created.")
@@ -66,12 +117,22 @@ class Repository(private val context: Context) {
                 val resultDirCreated = File(collectionDir, "result").mkdir()
 
                 if (imageDirCreated && resultDirCreated) {
-                    Log.d(TAG, "Collection $name created successfully with image and result directories.")
+                    // **Save metadata JSON**
+                    val metadataFile = File(collectionDir, "metadata.json")
+                    val metadataJson = JSONObject().apply {
+                        put("name", name)
+                        put("locationString", locationString)
+                        put("lat", lat)
+                        put("lon", lon)
+                        put("imgCount", 0)
+                    }
+                    metadataFile.writeText(metadataJson.toString())
+
+                    Log.d(TAG, "Collection $name created successfully with image, result directories, and metadata.json.")
                     return true
                 } else {
                     Log.e(TAG, "Failed to create subdirectories for collection $name.")
-                    // Clean up partial creation
-                    collectionDir.deleteRecursively()
+                    collectionDir.deleteRecursively() // Clean up if creation failed
                     return false
                 }
             } else {
@@ -83,6 +144,7 @@ class Repository(private val context: Context) {
             return false
         }
     }
+
 
     suspend fun scanImages(collectionName: String): List<ProcessImage> = withContext(Dispatchers.IO) {
         val collectionsDir = checkForCollectionsDir()

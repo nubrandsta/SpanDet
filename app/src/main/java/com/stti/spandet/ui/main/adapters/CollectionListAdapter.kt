@@ -30,7 +30,8 @@ class collectionListAdapter (
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(collection: Collection) {
             binding.apply {
-                tvName.text = collection.name
+                tvName.text = collection.locationString
+                tvDate.text = collection.name
                 tvCount.text = collection.imgCount.toString()
 //                tvDate.text = "remark"
 

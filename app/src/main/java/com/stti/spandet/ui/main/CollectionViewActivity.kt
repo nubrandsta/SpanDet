@@ -5,16 +5,19 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.stti.spandet.R
 import com.stti.spandet.data.Repository
 import com.stti.spandet.data.model.ClassOccurence
 import com.stti.spandet.databinding.ActivityCollectionViewBinding
+import com.stti.spandet.spandet.ProcessActivity
 import com.stti.spandet.ui.main.adapters.resultListAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,10 +47,20 @@ class CollectionViewActivity : AppCompatActivity() {
             insets
         }
 
-
+        repository = Repository(this)
 
         val collection_name = intent.getStringExtra("collection_name") // replace with your actual key
         collectionName = collection_name
+
+        lifecycleScope.launch {
+            val collection = repository.getCollectionMetadata(collection_name!!)
+            if (collection != null) {
+                Log.d("Process", "Collection Metadata: $collection")
+                binding.tvDate.text = collection.locationString
+            } else {
+                Toast.makeText(this@CollectionViewActivity, "Collection not found", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         binding.tvSubheading.text = collection_name
 

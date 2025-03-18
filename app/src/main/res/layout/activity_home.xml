@@ -30,7 +30,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:text="Selamat Datang, <user>"
+        android:text="Selamat Datang, user"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textAlignment="textStart"
@@ -47,7 +47,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:text="Lokasi anda sekarang <lokasi>"
+        android:text="Lokasi anda sekarang lokasi"
         android:textSize="18sp"
         android:textAlignment="textStart"
         app:layout_constraintEnd_toEndOf="parent"
@@ -79,10 +79,10 @@
         android:layout_marginTop="8dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:text="Survey yang pernah dilakukan:"
+        android:text="Riwayat Survey"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textAlignment="textStart"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_start"
@@ -100,5 +100,32 @@
         app:layout_constraintTop_toBottomOf="@id/tv_collection_title"
         app:layout_constraintVertical_bias="0.0"
         tools:listitem="@layout/item_collection" />
+
+    <LinearLayout
+        android:id="@+id/empty_prompt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:background="@drawable/button_secondary"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        app:layout_constraintVertical_bias="0.1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_collection_title">
+
+        <TextView
+            android:id="@+id/tv_empty_prompt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_koleksi"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

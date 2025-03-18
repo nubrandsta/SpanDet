@@ -42,3 +42,8 @@ private fun getImageUriForPreQ(context: Context): Uri {
         imageFile
     )
 }
+
+fun convertMillisToDirName(millis: Long): String {
+    val formatter = SimpleDateFormat("dd-MM-yyyy--HHmmss", Locale.US)
+    return formatter.format(Date(millis))
+}

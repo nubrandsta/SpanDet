@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
     <uses-feature android:name="android.hardware.camera" />
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -55,7 +58,7 @@
             android:name=".ui.main.CollectionViewActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.main.ProcessActivity"
+            android:name=".spandet.ProcessActivity"
             android:exported="false" />
         <activity
             android:name=".ui.main.CameraActivity"

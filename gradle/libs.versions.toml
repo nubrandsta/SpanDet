@@ -10,6 +10,7 @@ material = "1.12.0"
 activity = "1.8.0"
 constraintlayout = "2.1.4"
 cameraxVersion = "1.2.3"
+playServicesLocation = "21.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -31,6 +32,7 @@ xmlbeans = { group = "org.apache.xmlbeans", name = "xmlbeans", version = "5.1.1"
 
 tflite = { group = "org.tensorflow", name = "tensorflow-lite", version = "2.14.0" }
 tflitesupport = { group = "org.tensorflow", name = "tensorflow-lite-support", version = "0.4.4" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

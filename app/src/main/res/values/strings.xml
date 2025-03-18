@@ -1,13 +1,13 @@
 <resources>
     <string name="app_name">SpanDet</string>
-    <string name="prompt_koleksi">Anda belum memiliki koleksi Deteksi!</string>
+    <string name="prompt_koleksi">~ Belum Ada Hasil ~</string>
     <string name="koleksi_create">Buat koleksi</string>
     <string name="prompt_collection_create">Berikan nama untuk koleksi deteksi anda</string>
     <string name="koleksi_name_placeholder">nama_koleksi</string>
     <string name="camera">Foto Baru +</string>
     <string name="gallery">Dari Galeri</string>
-    <string name="start_detect">Mulai Deteksi</string>
-    <string name="prompt_result_empty">Anda belum memiliki hasil deteksi</string>
+    <string name="start_detect">Deteksi dan Upload</string>
+    <string name="prompt_result_empty">~ Belum Ada Hasil ~</string>
     <string name="new_detection">"Deteksi Gambar "</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

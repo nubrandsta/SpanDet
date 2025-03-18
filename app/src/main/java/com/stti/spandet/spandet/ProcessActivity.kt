@@ -1,4 +1,4 @@
-package com.stti.spandet.ui.main
+package com.stti.spandet.spandet
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.stti.spandet.R
 import com.stti.spandet.data.Repository
@@ -35,6 +37,7 @@ import com.stti.spandet.detector.Constants.WORKPIECE_DETECTOR_PATH
 import com.stti.spandet.detector.Constants.WORKPIECE_LABELS_PATH
 import com.stti.spandet.detector.Detector
 import com.stti.spandet.tools.getImageUri
+import com.stti.spandet.ui.main.CollectionViewActivity
 import com.stti.spandet.ui.main.adapters.imageListAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +58,8 @@ class ProcessActivity : AppCompatActivity() {
 
     private lateinit var workpiece_detector: Detector
     private lateinit var defect_detector: Detector
+
+    private lateinit var dirname: String
 
     private var images: MutableList<ProcessImage> = mutableListOf()
 
@@ -88,7 +93,17 @@ class ProcessActivity : AppCompatActivity() {
 
 
 
-        val collectionName = intent.getStringExtra("collection_name") ?: return
+        dirname = intent.getStringExtra("collection_name") ?: return
+
+//        lifecycleScope.launch {
+//            val collection = repository.getCollectionMetadata(dirname)
+//            if (collection != null) {
+//                Log.d("Process", "Collection Metadata: $collection")
+//                binding.text = collection.locationString
+//            } else {
+//                Toast.makeText(this@ProcessActivity, "Collection not found", Toast.LENGTH_SHORT).show()
+//            }
+//        }
 
         repository = Repository(this)
 
@@ -142,7 +157,7 @@ class ProcessActivity : AppCompatActivity() {
         setupImageCapture()
 
         binding.uploadButton.setOnClickListener {
-            processAllImages(collectionName)
+            processAllImages(dirname)
         }
     }
 

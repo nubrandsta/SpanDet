@@ -31,10 +31,8 @@ import com.stti.spandet.data.Repository
 import com.stti.spandet.data.model.BoundingBox
 import com.stti.spandet.data.model.ProcessImage
 import com.stti.spandet.databinding.ActivityProcessBinding
-import com.stti.spandet.detector.Constants.DEFECT_DETECTOR_PATH
-import com.stti.spandet.detector.Constants.DEFECT_LABELS_PATH
-import com.stti.spandet.detector.Constants.WORKPIECE_DETECTOR_PATH
-import com.stti.spandet.detector.Constants.WORKPIECE_LABELS_PATH
+import com.stti.spandet.detector.Constants.SPANDUK_DETECTOR_PATH
+import com.stti.spandet.detector.Constants.SPANDUK_LABELS_PATH
 import com.stti.spandet.detector.Detector
 import com.stti.spandet.tools.getImageUri
 import com.stti.spandet.ui.main.CollectionViewActivity
@@ -49,6 +47,7 @@ import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.File
 import java.io.FileOutputStream
+import androidx.core.graphics.scale
 
 class ProcessActivity : AppCompatActivity() {
 
@@ -56,8 +55,10 @@ class ProcessActivity : AppCompatActivity() {
     private lateinit var adapter: imageListAdapter
     private lateinit var repository: Repository
 
-    private lateinit var workpiece_detector: Detector
-    private lateinit var defect_detector: Detector
+//    private lateinit var workpiece_detector: Detector
+//    private lateinit var defect_detector: Detector
+
+    private lateinit var spanduk_detector: Detector
 
     private lateinit var dirname: String
 
@@ -108,28 +109,40 @@ class ProcessActivity : AppCompatActivity() {
         repository = Repository(this)
 
         // Set up detectors
-        workpiece_detector = Detector(baseContext, WORKPIECE_DETECTOR_PATH, WORKPIECE_LABELS_PATH, object : Detector.DetectorListener {
+//        workpiece_detector = Detector(baseContext, SPANDUK_DETECTOR_PATH, SPANDUK_LABELS_PATH, object : Detector.DetectorListener {
+//            override fun onEmptyDetect() {
+//                Log.d("Detector", "No workpiece detected.")
+//            }
+//
+//            override fun onDetect(boundingBoxes: List<BoundingBox>, inferenceTime: Long) {
+//                Log.d("Detector", "Workpiece detected with inference time: $inferenceTime ms")
+//            }
+//        })
+//
+//        defect_detector = Detector(baseContext, SPANDUK_DETECTOR_PATH, SPANDUK_LABELS_PATH, object : Detector.DetectorListener {
+//            override fun onEmptyDetect() {
+//                Log.d("Detector", "No defects detected.")
+//            }
+//
+//            override fun onDetect(boundingBoxes: List<BoundingBox>, inferenceTime: Long) {
+//                Log.d("Detector", "Defects detected with inference time: $inferenceTime ms")
+//            }
+//        })
+
+        spanduk_detector = Detector(baseContext, SPANDUK_DETECTOR_PATH, SPANDUK_LABELS_PATH, object : Detector.DetectorListener {
             override fun onEmptyDetect() {
-                Log.d("Detector", "No workpiece detected.")
+                Log.d("Detector", "No adverts detected.")
             }
 
             override fun onDetect(boundingBoxes: List<BoundingBox>, inferenceTime: Long) {
-                Log.d("Detector", "Workpiece detected with inference time: $inferenceTime ms")
+                Log.d("Detector", "Adverts detected with inference time: $inferenceTime ms")
             }
         })
 
-        defect_detector = Detector(baseContext, DEFECT_DETECTOR_PATH, DEFECT_LABELS_PATH, object : Detector.DetectorListener {
-            override fun onEmptyDetect() {
-                Log.d("Detector", "No defects detected.")
-            }
+//        workpiece_detector.setup()
+//        defect_detector.setup()
 
-            override fun onDetect(boundingBoxes: List<BoundingBox>, inferenceTime: Long) {
-                Log.d("Detector", "Defects detected with inference time: $inferenceTime ms")
-            }
-        })
-
-        workpiece_detector.setup()
-        defect_detector.setup()
+        spanduk_detector.setup()
 
         adapter = imageListAdapter { processImage ->
             // Handle click on processImage if needed
@@ -241,16 +254,19 @@ class ProcessActivity : AppCompatActivity() {
 
             images.forEachIndexed { index, processImage ->
                 withContext(Dispatchers.IO) {
+//                    val timeNow = System.currentTimeMillis()
+//                    val originalImageFile = saveOriginalImage(processImage.uri, collectionName, timeNow)
+//                    val workpieceResult = processWorkpieceDetection(processImage.uri, collectionName, timeNow)
+//                    if (workpieceResult != null) {
+//                        Log.d("ProcessImage", "Workpiece detected, proceeding to defect detection.")
+//                        processDefectDetection(processImage.uri, workpieceResult.first, workpieceResult.second)
+//                    } else {
+//                        Log.e("ProcessImage", "No workpiece detected, saving the plain image for URI: ${processImage.uri}")
+//                        savePlainImage(processImage.uri, collectionName)
+//                    }
                     val timeNow = System.currentTimeMillis()
-                    val originalImageFile = saveOriginalImage(processImage.uri, collectionName, timeNow)
-                    val workpieceResult = processWorkpieceDetection(processImage.uri, collectionName, timeNow)
-                    if (workpieceResult != null) {
-                        Log.d("ProcessImage", "Workpiece detected, proceeding to defect detection.")
-                        processDefectDetection(processImage.uri, workpieceResult.first, workpieceResult.second)
-                    } else {
-                        Log.e("ProcessImage", "No workpiece detected, saving the plain image for URI: ${processImage.uri}")
-                        savePlainImage(processImage.uri, collectionName)
-                    }
+                    saveOriginalImage(processImage.uri, collectionName, timeNow)
+                    processSpandukDetection(processImage.uri, collectionName, timeNow)
                 }
                 binding.progressIndicator.progress = index + 1
             }
@@ -266,71 +282,118 @@ class ProcessActivity : AppCompatActivity() {
         }
     }
 
-    private fun processWorkpieceDetection(uri: Uri, collectionName: String, timeNow: Long): Pair<File, File>? {
-        Log.d("ProcessImage", "Starting workpiece detection for URI: $uri")
+//    private fun processWorkpieceDetection(uri: Uri, collectionName: String, timeNow: Long): Pair<File, File>? {
+//        Log.d("ProcessImage", "Starting workpiece detection for URI: $uri")
+//
+//        val bitmap = uriToBitmap(uri) ?: return null
+//        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, workpiece_detector.tensorWidth, workpiece_detector.tensorHeight, false)
+//
+//        val tensorImage = workpiece_detector.imageProcessor.process(TensorImage.fromBitmap(resizedBitmap))
+//        val output = TensorBuffer.createFixedSize(intArrayOf(1, workpiece_detector.numChannel, workpiece_detector.numElements), DataType.FLOAT32)
+//
+//        try {
+//            workpiece_detector.interpreter?.run(tensorImage.buffer, output.buffer.rewind())
+//        } catch (e: Exception) {
+//            Log.e("ProcessImage", "Error during workpiece detection inference: ${e.message}")
+//            return null
+//        }
+//
+//        val bestBoxes = workpiece_detector.bestBox(output.floatArray)
+//        if (bestBoxes.isNullOrEmpty()) {
+//            Log.d("ProcessImage", "No workpiece detected for URI: $uri")
+//            return null
+//        }
+//        val fileName = "${collectionName}_${timeNow}"
+//        val resultDir = getResultDirectory(collectionName)
+//        val jsonFile = File(resultDir, "$fileName.json")
+//        val imageFile = File(resultDir, "$fileName.jpg")
+//
+//        return Pair(jsonFile, imageFile)
+//    }
+//
+//    private fun processDefectDetection(uri: Uri, jsonFile: File, imageFile: File) {
+//        Log.d("ProcessImage", "Starting defect detection for URI: $uri")
+//
+//        val bitmap = uriToBitmap(uri) ?: return
+//
+//        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, defect_detector.tensorWidth, defect_detector.tensorHeight, false)
+//        val tensorImage = defect_detector.imageProcessor.process(TensorImage.fromBitmap(resizedBitmap))
+//        val output = TensorBuffer.createFixedSize(intArrayOf(1, defect_detector.tensorHeight, defect_detector.tensorWidth, defect_detector.numChannel), DataType.FLOAT32)
+//
+//        try {
+//            defect_detector.interpreter?.run(tensorImage.buffer, output.buffer.rewind())
+//        } catch (e: Exception) {
+//            Log.e("ProcessImage", "Error during defect detection inference: ${e.message}")
+//            return
+//        }
+//
+//        val bestBoxes = defect_detector.bestBox(output.floatArray)
+//        if (bestBoxes.isNullOrEmpty()) {
+//            Log.d("ProcessImage", "No defects detected for URI: $uri")
+//            return
+//        }
+//
+//        try {
+//            // Save defect detection JSON (overwrite workpiece JSON)
+//            val json = boundingBoxesToJson(bestBoxes)
+//            jsonFile.writeText(json.toString())
+//            Log.d("FileSave", "Defect JSON saved to ${jsonFile.absolutePath}")
+//
+//            // Draw bounding boxes on the image and save it (overwrite workpiece image)
+//            val resultBitmap = drawBoundingBoxesOnBitmap(bitmap, bestBoxes)
+//            saveBitmapToFile(resultBitmap, imageFile)
+//            Log.d("FileSave", "Defect image with bounding boxes saved to ${imageFile.absolutePath}")
+//        } catch (e: Exception) {
+//            Log.e("ProcessImage", "Failed to save defect detection files: ${e.message}")
+//        }
+//    }
 
-        val bitmap = uriToBitmap(uri) ?: return null
-        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, workpiece_detector.tensorWidth, workpiece_detector.tensorHeight, false)
+    private fun processSpandukDetection(uri: Uri, collectionName: String, timeNow: Long) {
+        Log.d("ProcessImage", "Starting spanduk detection for URI: $uri")
 
-        val tensorImage = workpiece_detector.imageProcessor.process(TensorImage.fromBitmap(resizedBitmap))
-        val output = TensorBuffer.createFixedSize(intArrayOf(1, workpiece_detector.numChannel, workpiece_detector.numElements), DataType.FLOAT32)
+        val bitmap = uriToBitmap(uri) ?: return
+        val resizedBitmap = bitmap.scale(spanduk_detector.tensorWidth, spanduk_detector.tensorHeight, false)
+
+        val tensorImage = spanduk_detector.imageProcessor.process(TensorImage.fromBitmap(resizedBitmap))
+        val output = TensorBuffer.createFixedSize(intArrayOf(1, spanduk_detector.numChannel, spanduk_detector.numElements), DataType.FLOAT32)
 
         try {
-            workpiece_detector.interpreter?.run(tensorImage.buffer, output.buffer.rewind())
+            spanduk_detector.interpreter?.run(tensorImage.buffer, output.buffer.rewind())
         } catch (e: Exception) {
-            Log.e("ProcessImage", "Error during workpiece detection inference: ${e.message}")
-            return null
+            Log.e("ProcessImage", "Error during spanduk detection inference: ${e.message}")
+            return
         }
 
-        val bestBoxes = workpiece_detector.bestBox(output.floatArray)
-        if (bestBoxes.isNullOrEmpty()) {
-            Log.d("ProcessImage", "No workpiece detected for URI: $uri")
-            return null
-        }
+        val detectedBoxes = spanduk_detector.bestBox(output.floatArray)
+
         val fileName = "${collectionName}_${timeNow}"
         val resultDir = getResultDirectory(collectionName)
         val jsonFile = File(resultDir, "$fileName.json")
         val imageFile = File(resultDir, "$fileName.jpg")
 
-        return Pair(jsonFile, imageFile)
+        try {
+            if (!detectedBoxes.isNullOrEmpty()) {
+                // Save JSON only if spanduk is detected
+                val json = boundingBoxesToJson(detectedBoxes)
+                jsonFile.writeText(json.toString())
+                Log.d("FileSave", "Spanduk JSON saved to ${jsonFile.absolutePath}")
+
+                // Draw bounding boxes and save
+                val resultBitmap = drawBoundingBoxesOnBitmap(bitmap, detectedBoxes)
+                saveBitmapToFile(resultBitmap, imageFile)
+                Log.d("FileSave", "Spanduk image with bounding boxes saved to ${imageFile.absolutePath}")
+            } else {
+                // No detection, save plain image only
+                saveBitmapToFile(bitmap, imageFile)
+                Log.d("FileSave", "No spanduk detected, plain image saved to ${imageFile.absolutePath}")
+            }
+        } catch (e: Exception) {
+            Log.e("ProcessImage", "Failed to save spanduk detection files: ${e.message}")
+        }
     }
 
-    private fun processDefectDetection(uri: Uri, jsonFile: File, imageFile: File) {
-        Log.d("ProcessImage", "Starting defect detection for URI: $uri")
 
-        val bitmap = uriToBitmap(uri) ?: return
 
-        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, defect_detector.tensorWidth, defect_detector.tensorHeight, false)
-        val tensorImage = defect_detector.imageProcessor.process(TensorImage.fromBitmap(resizedBitmap))
-        val output = TensorBuffer.createFixedSize(intArrayOf(1, defect_detector.tensorHeight, defect_detector.tensorWidth, defect_detector.numChannel), DataType.FLOAT32)
-
-        try {
-            defect_detector.interpreter?.run(tensorImage.buffer, output.buffer.rewind())
-        } catch (e: Exception) {
-            Log.e("ProcessImage", "Error during defect detection inference: ${e.message}")
-            return
-        }
-
-        val bestBoxes = defect_detector.bestBox(output.floatArray)
-        if (bestBoxes.isNullOrEmpty()) {
-            Log.d("ProcessImage", "No defects detected for URI: $uri")
-            return
-        }
-
-        try {
-            // Save defect detection JSON (overwrite workpiece JSON)
-            val json = boundingBoxesToJson(bestBoxes)
-            jsonFile.writeText(json.toString())
-            Log.d("FileSave", "Defect JSON saved to ${jsonFile.absolutePath}")
-
-            // Draw bounding boxes on the image and save it (overwrite workpiece image)
-            val resultBitmap = drawBoundingBoxesOnBitmap(bitmap, bestBoxes)
-            saveBitmapToFile(resultBitmap, imageFile)
-            Log.d("FileSave", "Defect image with bounding boxes saved to ${imageFile.absolutePath}")
-        } catch (e: Exception) {
-            Log.e("ProcessImage", "Failed to save defect detection files: ${e.message}")
-        }
-    }
 
     private fun saveOriginalImage(uri: Uri, collectionName: String, timeNow: Long): File? {
         val bitmap = uriToBitmap(uri) ?: return null

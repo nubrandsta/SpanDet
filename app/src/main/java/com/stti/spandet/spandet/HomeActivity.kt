@@ -95,13 +95,14 @@ class HomeActivity : AppCompatActivity() {
                 } else {
                     repository.createCollectionDir(dirname, locationName, lat, lon)
                     Toast.makeText(this@HomeActivity, "Koleksi berhasil dibuat!", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this@HomeActivity, ProcessActivity::class.java)
+                    intent.putExtra("collection_name", dirname)
+                    startActivity(intent)
                     finish()
                 }
             }
 
-            val intent = Intent(this, CollectionViewActivity::class.java)
-            intent.putExtra("collection_name", dirname)
-            startActivity(intent)
+
         }
 
     }

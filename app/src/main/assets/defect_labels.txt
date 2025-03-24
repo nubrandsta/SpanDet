@@ -1,5 +1,0 @@
-adj
-geo
-int
-non
-pro

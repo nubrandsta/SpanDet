@@ -52,6 +52,7 @@ class CreateCollectionActivity : AppCompatActivity() {
             val name = binding.etCollectionName.text.toString()
             // implement coroutine scope
 
+            val timestamp = System.currentTimeMillis()
 
             lifecycleScope.launch {
                 val existingCollections = repository.scanCollectionsDir().map { it.name }
@@ -61,7 +62,7 @@ class CreateCollectionActivity : AppCompatActivity() {
                         .setPositiveButton("OK", null)
                         .show()
                 } else {
-                    repository.createCollectionDir(name)
+                    repository.createCollectionDir(name,timestamp)
                     Toast.makeText(this@CreateCollectionActivity, "Koleksi berhasil dibuat!", Toast.LENGTH_SHORT).show()
                     finish()
                 }

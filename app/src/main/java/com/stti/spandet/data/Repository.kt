@@ -50,7 +50,7 @@ class Repository(private val context: Context) {
 
                 val location = if (metadataFile.exists()) {
                     val metadataJson = JSONObject(metadataFile.readText())
-                    metadataJson.optString("location", "Unknown") // Default to "Unknown" if missing
+                    metadataJson.optString("locationString", "Unknown") // Default to "Unknown" if missing
                 } else {
                     "Unknown"
                 }
@@ -70,7 +70,21 @@ class Repository(private val context: Context) {
                     0.0
                 }
 
-                Collection(name, imgCount, location, lat, lon)  // Include location in Collection model
+                val timestamp = if (metadataFile.exists()) {
+                    val metadataJson = JSONObject(metadataFile.readText())
+                    metadataJson.optLong("timestamp",0L) // Default to 0.0 if missing
+                } else {
+                    0L
+                }
+
+                val detections = if (metadataFile.exists()) {
+                    val metadataJson = JSONObject(metadataFile.readText())
+                    metadataJson.optInt("detections", 0) // Default to 0 if missing
+                } else {
+                    0
+                }
+
+                Collection(name, imgCount, detections, timestamp, location, lat, lon)  // Include location in Collection model
             } ?: emptyList()
         } else {
             Log.d(TAG, "Collections directory does not exist.")
@@ -91,8 +105,10 @@ class Repository(private val context: Context) {
                 val lat = metadataJson.optDouble("lat", 0.0)
                 val lon = metadataJson.optDouble("lon", 0.0)
                 val imgCount = File(collectionDir, "image").listFiles()?.size ?: 0
+                val detections = metadataJson.optInt("detections", 0)
+                val timestamp = metadataJson.optLong("timestamp", 0L)
 
-                return@withContext Collection(name, imgCount, location, lat, lon)
+                return@withContext Collection(name, imgCount,detections, timestamp, location, lat, lon)
             } else {
                 Log.d(TAG, "Collection $collectionName or its metadata.json does not exist.")
             }
@@ -102,7 +118,7 @@ class Repository(private val context: Context) {
 
 
     // Create a new collection directory along with 'image' and 'result' subdirectories
-    fun createCollectionDir(name: String, locationString: String="none", lat: Double=0.0, lon: Double=0.0): Boolean {
+    fun createCollectionDir(name: String, timestamp: Long, locationString: String="none", lat: Double=0.0, lon: Double=0.0): Boolean {
         val collectionsDir = checkForCollectionsDir()
         if (collectionsDir == null) {
             Log.e(TAG, "Cannot create collection $name: Collections directory does not exist and could not be created.")
@@ -125,6 +141,8 @@ class Repository(private val context: Context) {
                         put("lat", lat)
                         put("lon", lon)
                         put("imgCount", 0)
+                        put("detections",0)
+                        put("timestamp", timestamp)
                     }
                     metadataFile.writeText(metadataJson.toString())
 

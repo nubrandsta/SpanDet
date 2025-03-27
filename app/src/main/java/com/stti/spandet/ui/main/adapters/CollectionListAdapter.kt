@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.stti.spandet.data.model.Collection
 import com.stti.spandet.databinding.ItemCollectionBinding
+import com.stti.spandet.tools.convertIsoToReadable
+import com.stti.spandet.tools.convertMillisToIsoTime
 import com.stti.spandet.ui.main.adapters.collectionListAdapter.MyViewHolder.Companion.DIFF_CALLBACK_COLLECTION
 
 class collectionListAdapter (
@@ -30,10 +32,13 @@ class collectionListAdapter (
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(collection: Collection) {
             binding.apply {
+
+                val timeISO = convertMillisToIsoTime(collection.timestamp)
+                val timeReadable = convertIsoToReadable(timeISO)
+
                 tvName.text = collection.locationString
-                tvDate.text = collection.name
+                tvDate.text = timeReadable
                 tvCount.text = collection.imgCount.toString()
-//                tvDate.text = "remark"
 
 
                 root.setOnClickListener {

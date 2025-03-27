@@ -10,10 +10,15 @@ import androidx.core.content.FileProvider
 import com.stti.spandet.BuildConfig
 import java.io.File
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
 private const val FILENAME_FORMAT = "yyyyMMdd_HHmmss"
+private const val UIDATE_FORMAT = "dd-MM-yyyy"
+
 private val timeStamp: String = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(Date())
 
 fun getImageUri(context: Context): Uri {
@@ -46,4 +51,22 @@ private fun getImageUriForPreQ(context: Context): Uri {
 fun convertMillisToDirName(millis: Long): String {
     val formatter = SimpleDateFormat("dd-MM-yyyy--HHmmss", Locale.US)
     return formatter.format(Date(millis))
+}
+
+/** ✅ Convert millis to ISO 8601 format */
+fun convertMillisToIsoTime(millis: Long): String {
+    return Instant.ofEpochMilli(millis).toString() // Example: 2024-05-06T13:20:15Z
+}
+
+/** ✅ Convert ISO 8601 time string to readable format "dd-MM-yyyy HH:mm:ss" */
+fun convertIsoToReadable(isoTime: String): String {
+    return try {
+        val instant = Instant.parse(isoTime)
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+            .withLocale(Locale.US)
+            .withZone(ZoneId.systemDefault())
+        formatter.format(instant)
+    } catch (e: Exception) {
+        "Invalid Date"
+    }
 }

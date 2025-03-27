@@ -93,7 +93,9 @@ class HomeActivity : AppCompatActivity() {
                         .setPositiveButton("OK", null)
                         .show()
                 } else {
-                    repository.createCollectionDir(dirname, locationName, lat, lon)
+
+                    val timenow = System.currentTimeMillis()
+                    repository.createCollectionDir(dirname, timenow, locationName, lat, lon)
                     Toast.makeText(this@HomeActivity, "Koleksi berhasil dibuat!", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this@HomeActivity, ProcessActivity::class.java)
                     intent.putExtra("collection_name", dirname)

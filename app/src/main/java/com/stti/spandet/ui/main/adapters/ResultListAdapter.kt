@@ -37,11 +37,7 @@ class resultListAdapter (
                     Log.d("Image URI", "showImage: $it")
                     binding.ivIcon.setImageURI(it)
                 }
-                val adjCount = result.classOccurence.adj
-                val intCount = result.classOccurence.int
-                val geoCount = result.classOccurence.geo
-                val proCount = result.classOccurence.pro
-                val nonCount = result.classOccurence.non
+                val spandukCount = result.classOccurence.spanduk
 
                 val isEmpty = result.isEmpty
                 if(isEmpty){
@@ -49,59 +45,28 @@ class resultListAdapter (
                     binding.tvStatusDefect.visibility = android.view.View.GONE
                     binding.tvStatusOK.visibility = android.view.View.GONE
                 }
-                else if(adjCount>0 && intCount<1 && geoCount<1 && proCount<1 && nonCount<1){
-                    binding.tvDefectAdj.text = adjCount.toString()
+                else if(spandukCount>0){
+                    binding.tvDefectAdj.text = spandukCount.toString()
                     binding.tvDefectAdj.visibility = android.view.View.VISIBLE
 
                     binding.tvStatusCheck.visibility = android.view.View.VISIBLE
                     binding.tvStatusError.visibility = android.view.View.GONE
                     binding.tvStatusOK.visibility = android.view.View.GONE
+
+//                    binding.tvStatusDefect.visibility = android.view.View.VISIBLE
+                    binding.tvStatusError.visibility = android.view.View.GONE
+                    binding.tvStatusOK.visibility = android.view.View.GONE
+                    binding.tvStatusCheck.visibility = android.view.View.GONE
+
+                    binding.tvDefectAdj.text = spandukCount.toString()
+                    binding.tvDefectAdj.visibility = android.view.View.VISIBLE
                 }
                 else{
-                    if(adjCount>0 || intCount>0 || geoCount>0 || proCount>0 || nonCount>0){
-                        binding.tvStatusDefect.visibility = android.view.View.VISIBLE
-                        binding.tvStatusError.visibility = android.view.View.GONE
-                        binding.tvStatusOK.visibility = android.view.View.GONE
-                        binding.tvStatusCheck.visibility = android.view.View.GONE
+                    binding.tvStatusOK.visibility = android.view.View.VISIBLE
+                    binding.tvStatusError.visibility = android.view.View.GONE
+                    binding.tvStatusDefect.visibility = android.view.View.GONE
+                    binding.tvDefectAdj.visibility = android.view.View.GONE
 
-                        if(adjCount>0){
-                            binding.tvDefectAdj.text = adjCount.toString()
-                            binding.tvDefectAdj.visibility = android.view.View.VISIBLE
-                        } else{
-                            binding.tvDefectAdj.visibility = android.view.View.GONE
-                        }
-                        if(intCount>0){
-                            binding.tvDefectInt.text = intCount.toString()
-                            binding.tvDefectInt.visibility = android.view.View.VISIBLE
-                        } else{
-                            binding.tvDefectInt.visibility = android.view.View.GONE
-                        }
-                        if(geoCount>0){
-                            binding.tvDefectGeo.text = geoCount.toString()
-                            binding.tvDefectGeo.visibility = android.view.View.VISIBLE
-                        } else{
-                            binding.tvDefectGeo.visibility = android.view.View.GONE
-                        }
-                        if(proCount>0){
-                            binding.tvDefectPro.text = proCount.toString()
-                            binding.tvDefectPro.visibility = android.view.View.VISIBLE
-                        } else{
-                            binding.tvDefectPro.visibility = android.view.View.GONE
-                        }
-                        if(nonCount>0){
-                            binding.tvDefectNon.text = nonCount.toString()
-                            binding.tvDefectNon.visibility = android.view.View.VISIBLE
-                        } else{
-                            binding.tvDefectNon.visibility = android.view.View.GONE
-
-                        }
-                    }
-                    else{
-                        binding.tvStatusOK.visibility = android.view.View.VISIBLE
-                        binding.tvStatusError.visibility = android.view.View.GONE
-                        binding.tvStatusDefect.visibility = android.view.View.GONE
-
-                    }
                 }
 
 

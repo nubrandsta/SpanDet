@@ -1,6 +1,8 @@
 package com.stti.spandet.data
 
 import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import android.net.Uri
 import android.util.Log
 import com.stti.spandet.data.model.ClassOccurence
@@ -11,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
+import java.util.Locale
 
 class Repository(private val context: Context) {
 
@@ -271,31 +274,19 @@ class Repository(private val context: Context) {
         val jsonObject = JSONObject(jsonContent)
         val detections = jsonObject.getJSONArray("detections")
 
-        var adjCount = 0
-        var intCount = 0
-        var geoCount = 0
-        var proCount = 0
-        var nonCount = 0
+        var spandukCount = 0
 
         for (i in 0 until detections.length()) {
             val detection = detections.getJSONObject(i)
             val className = detection.getString("class_name")
 
             when (className) {
-                "adj" -> adjCount++
-                "int" -> intCount++
-                "geo" -> geoCount++
-                "pro" -> proCount++
-                "non" -> nonCount++
+                "spanduk" -> spandukCount++
             }
         }
 
         return ClassOccurence(
-            adj = adjCount,
-            int = intCount,
-            geo = geoCount,
-            pro = proCount,
-            non = nonCount
+            spanduk = spandukCount
         )
     }
 
@@ -339,6 +330,31 @@ class Repository(private val context: Context) {
         }
     }
 
+    suspend fun reverseGeocodeLocation(lat: Double, lon: Double): String = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses: List<Address> = geocoder.getFromLocation(lat, lon, 1) ?: return@withContext "Unknown Location"
+
+            if (addresses.isNotEmpty()) {
+                val address = addresses[0]
+                buildString {
+                    if (!address.featureName.isNullOrEmpty()) append(address.featureName + ", ")
+                    if (!address.thoroughfare.isNullOrEmpty()) append(address.thoroughfare + ", ")
+                    if (!address.subThoroughfare.isNullOrEmpty()) append(address.subThoroughfare + ", ")
+                    if (!address.subLocality.isNullOrEmpty()) append(address.subLocality + ", ")
+                    if (!address.locality.isNullOrEmpty()) append(address.locality + ", ")
+                    if (!address.subAdminArea.isNullOrEmpty()) append(address.subAdminArea + ", ")
+                    if (!address.adminArea.isNullOrEmpty()) append(address.adminArea + ", ")
+                    if (!address.postalCode.isNullOrEmpty()) append(address.postalCode)
+                }.trim().removeSuffix(",")
+            } else {
+                "Unknown Location"
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Reverse geocoding failed: ${e.message}", e)
+            "Unknown Location"
+        }
+    }
 
 
 }

@@ -22,21 +22,20 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginStart="12dp"
-            android:layout_marginTop="1dp"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="4dp"
-            android:src="@drawable/ic_folder"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:src="@drawable/ic_location"
+            app:layout_constraintBottom_toBottomOf="@id/tv_name"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/ic_banner"
             app:tint="@color/primary_red" />
 
         <TextView
             android:id="@+id/tv_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="2dp"
             android:paddingStart="5dp"
             android:paddingEnd="30dp"
@@ -81,9 +80,63 @@
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1"
-            app:layout_constraintTop_toTopOf="@+id/tv_name"
-            tools:text="12 Gambar" />
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/iv_icon"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detections"
+            tools:text="123 Foto" />
+
+        <ImageView
+            android:id="@+id/ic_count"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginEnd="120dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="3dp"
+            android:src="@drawable/ic_photo"
+            app:tint="@color/primary_green"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/iv_icon"
+            app:layout_constraintTop_toBottomOf="@+id/ic_detections"
+             />
+
+        <TextView
+            android:id="@+id/tv_detections"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="4dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="30dp"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@id/iv_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/iv_icon"
+            app:layout_constraintTop_toBottomOf="@id/tv_name"
+            tools:text="123 Spanduk" />
+
+        <ImageView
+            android:id="@+id/ic_detections"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginEnd="120dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="3dp"
+            android:src="@drawable/ic_banner"
+            app:tint="@color/primary_red"
+            app:layout_constraintBottom_toBottomOf="@id/iv_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/iv_icon"
+            app:layout_constraintTop_toBottomOf="@+id/tv_name"
+            />
 
         <View
             android:id="@+id/divider"

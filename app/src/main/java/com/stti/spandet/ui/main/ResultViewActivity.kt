@@ -19,6 +19,7 @@ import com.stti.spandet.ui.info.IntegrityDefectFragment
 import com.stti.spandet.ui.info.NoDefectFragment
 import com.stti.spandet.ui.info.NonpenDefectFragment
 import com.stti.spandet.ui.info.PostprocDefectFragment
+import com.stti.spandet.ui.info.SpandukFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,6 +29,10 @@ class ResultViewActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityResultViewBinding
     private lateinit var repository: Repository
+
+    private var latitude : Double = 0.0
+    private var longitude : Double = 0.0
+    private var timestamp : Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,66 +56,28 @@ class ResultViewActivity : AppCompatActivity() {
 
 
         val isEmpty = intent.getBooleanExtra("isEmpty", false)
-        val adjCount = intent.getIntExtra("adjCount", 0)
-        val intCount = intent.getIntExtra("intCount", 0)
-        val geoCount = intent.getIntExtra("geoCount", 0)
-        val postCount = intent.getIntExtra("postCount", 0)
-        val nonpenCount = intent.getIntExtra("nonCount", 0)
+        val spandukCount = intent.getIntExtra("spandukCount", 0)
+        latitude = intent.getDoubleExtra("latitude", 0.0)
+        longitude = intent.getDoubleExtra("longitude", 0.0)
+        timestamp = intent.getLongExtra("timestamp", 0L)
 
-        val adjacentFragment = AdjacentDefectFragment.newInstance(adjCount)
-        val integrityFragment = IntegrityDefectFragment.newInstance(intCount)
-        val geometryFragment = GeometryDefectFragment.newInstance(geoCount)
-        val postprocFragment = PostprocDefectFragment.newInstance(postCount)
-        val nonpenFragment = NonpenDefectFragment.newInstance(nonpenCount)
         val emptyFragment = EmptyDetectFragment()
-        val nodefectFragment = NoDefectFragment()
+        val spandukFragment = SpandukFragment.newInstance(spandukCount, latitude, longitude, timestamp)
+
+
 
         if(isEmpty){
-            Toast.makeText(this, "Tidak ada area pengelasan", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Tidak ada spanduk dalam gambar", Toast.LENGTH_SHORT).show()
             supportFragmentManager.beginTransaction().apply {
-                add(R.id.fragment_container, emptyFragment)
+                add(R.id.fragment_container, spandukFragment)
                 commit()
             }
         }
         else{
-            if(adjCount>0||intCount>0||geoCount>0||postCount>0||nonpenCount>0){
-               if(adjCount>0) {
-                   supportFragmentManager.beginTransaction().apply {
-                       add(R.id.fragment_container, adjacentFragment)
-                       commit()
-                   }
-               }
-                if(intCount>0) {
-                     supportFragmentManager.beginTransaction().apply {
-                          add(R.id.fragment_container, integrityFragment)
-                          commit()
-                     }
-                }
-                if(geoCount>0) {
-                     supportFragmentManager.beginTransaction().apply {
-                          add(R.id.fragment_container, geometryFragment)
-                          commit()
-                     }
-                }
-                if(postCount>0) {
-                     supportFragmentManager.beginTransaction().apply {
-                          add(R.id.fragment_container, postprocFragment)
-                          commit()
-                     }
-                }
-                if(nonpenCount>0) {
-                     supportFragmentManager.beginTransaction().apply {
-                          add(R.id.fragment_container, nonpenFragment)
-                          commit()
-                     }
-                }
-            }
-            else{
-                supportFragmentManager.beginTransaction().apply {
-                    add(R.id.fragment_container, nodefectFragment)
-                    commit()
-                }
-            }
+           supportFragmentManager.beginTransaction().apply {
+               add(R.id.fragment_container, spandukFragment)
+               commit()
+           }
         }
 
         Log.d("ResultViewActivity", "result: $resultImageUri")

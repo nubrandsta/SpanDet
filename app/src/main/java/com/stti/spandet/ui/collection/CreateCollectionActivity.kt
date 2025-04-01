@@ -11,12 +11,16 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.stti.spandet.data.Repository
+import com.stti.spandet.data.preferences.UserPreferences
 import com.stti.spandet.databinding.ActivityCreateCollectionBinding
 import kotlinx.coroutines.launch
 
 class CreateCollectionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCreateCollectionBinding
     private lateinit var repository: Repository
+
+    private lateinit var prefs: UserPreferences
+    private var username = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +34,10 @@ class CreateCollectionActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
         repository = Repository(this)
+        prefs = UserPreferences(this)
+        username = prefs.getUsername().toString()
 
         binding.etCollectionName.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -55,14 +62,14 @@ class CreateCollectionActivity : AppCompatActivity() {
             val timestamp = System.currentTimeMillis()
 
             lifecycleScope.launch {
-                val existingCollections = repository.scanCollectionsDir().map { it.name }
+                val existingCollections = repository.scanCollectionsDir(username).map { it.name }
                 if (name in existingCollections) {
                     AlertDialog.Builder(this@CreateCollectionActivity)
                         .setMessage("Sebuah koleksi dengan nama ini sudah ada!.")
                         .setPositiveButton("OK", null)
                         .show()
                 } else {
-                    repository.createCollectionDir(name,timestamp)
+                    repository.createCollectionDir(name,timestamp,owner=username)
                     Toast.makeText(this@CreateCollectionActivity, "Koleksi berhasil dibuat!", Toast.LENGTH_SHORT).show()
                     finish()
                 }

@@ -80,12 +80,8 @@ class CollectionViewActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.fabReport.setOnClickListener {
-            CoroutineScope(Dispatchers.Main).launch {
-                showProgressBar()
-                exportResultsToExcel()
-                hideProgressBar()
-            }
+        binding.fabBack.setOnClickListener {
+            finish()
         }
 
         // Initialize the adapter
@@ -104,7 +100,7 @@ class CollectionViewActivity : AppCompatActivity() {
             intent.putExtra("latitude", latitude)
             intent.putExtra("longitude", longitude)
             intent.putExtra("timestamp", timestamp)
-            
+
             startActivity(intent)
         }
 

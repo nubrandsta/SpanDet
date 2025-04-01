@@ -35,7 +35,7 @@
             android:id="@+id/tv_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             android:layout_marginBottom="2dp"
             android:paddingStart="5dp"
             android:paddingEnd="30dp"
@@ -80,8 +80,8 @@
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toEndOf="@+id/iv_icon"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/ic_count"
             app:layout_constraintTop_toBottomOf="@+id/tv_detections"
             tools:text="123 Foto" />
 
@@ -113,10 +113,10 @@
             android:paddingEnd="30dp"
             android:textColor="@color/black"
             android:textSize="14sp"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintBottom_toBottomOf="@id/iv_icon"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toEndOf="@+id/iv_icon"
+            app:layout_constraintStart_toEndOf="@+id/ic_detections"
             app:layout_constraintTop_toBottomOf="@id/tv_name"
             tools:text="123 Spanduk" />
 

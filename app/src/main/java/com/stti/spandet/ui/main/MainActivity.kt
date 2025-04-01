@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.stti.spandet.data.Repository
+import com.stti.spandet.data.preferences.UserPreferences
 import com.stti.spandet.databinding.ActivityMainBinding
 import com.stti.spandet.ui.collection.CreateCollectionActivity
 import com.stti.spandet.ui.collection.SelectCollectionActivity
@@ -21,6 +22,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
     private lateinit var adapter: collectionListAdapter
     private lateinit var repository: Repository
+
+    private lateinit var prefs: UserPreferences
+    private var username = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +40,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         repository = Repository(this)
+        prefs = UserPreferences(this)
+        username = prefs.getUsername().toString()
 
         adapter = collectionListAdapter { collection ->
             // intent to collection view activity
@@ -61,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         binding.rvCollection.adapter = adapter
 
         lifecycleScope.launch {
-            val collections = repository.scanCollectionsDir()
+            val collections = repository.scanCollectionsDir(username)
             if (collections.isEmpty()) {
                 binding.rvCollection.visibility = View.GONE
                 binding.emptyPrompt.visibility = View.VISIBLE
@@ -76,7 +82,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            val collections = repository.scanCollectionsDir()
+            val collections = repository.scanCollectionsDir(username)
             if (collections.isEmpty()) {
                 binding.rvCollection.visibility = View.GONE
                 binding.emptyPrompt.visibility = View.VISIBLE

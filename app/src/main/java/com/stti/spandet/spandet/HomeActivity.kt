@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.stti.spandet.data.Repository
+import com.stti.spandet.data.preferences.UserPreferences
 import com.stti.spandet.databinding.ActivityHomeBinding
 import com.stti.spandet.tools.convertMillisToDirName
 import com.stti.spandet.ui.main.CollectionViewActivity
@@ -40,6 +41,10 @@ class HomeActivity : AppCompatActivity() {
     private var locationName: String = "Somewhere"
     private var lat: Double = 0.0
     private var lon: Double = 0.0
+
+    private lateinit var prefs: UserPreferences
+
+    private var username:String = ""
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +64,13 @@ class HomeActivity : AppCompatActivity() {
         checkAndRequestPermissions()
 
         repository = Repository(this)
+
+        prefs = UserPreferences(this)
+
+        username = prefs.getUsername().toString()
+
+        binding.tvName.text = "Selamat Datang, ${username}"
+
         adapter = collectionListAdapter { collection ->
             // intent to collection view activity
             val selectedCollection = collection.name
@@ -71,7 +83,7 @@ class HomeActivity : AppCompatActivity() {
         binding.rvCollections.adapter = adapter
 
         lifecycleScope.launch {
-            val collections = repository.scanCollectionsDir()
+            val collections = repository.scanCollectionsDir(username)
             if (collections.isEmpty()) {
                 binding.rvCollections.visibility = View.GONE
                 binding.emptyPrompt.visibility = View.VISIBLE
@@ -86,7 +98,7 @@ class HomeActivity : AppCompatActivity() {
             val dirname = convertMillisToDirName(System.currentTimeMillis())
 
             lifecycleScope.launch {
-                val existingCollections = repository.scanCollectionsDir().map { it.name }
+                val existingCollections = repository.scanCollectionsDir(username).map { it.name }
                 if (dirname in existingCollections) {
                     AlertDialog.Builder(this@HomeActivity)
                         .setMessage("Sebuah koleksi dengan nama ini sudah ada!.")
@@ -95,7 +107,7 @@ class HomeActivity : AppCompatActivity() {
                 } else {
 
                     val timenow = System.currentTimeMillis()
-                    repository.createCollectionDir(dirname, timenow, locationName, lat, lon)
+                    repository.createCollectionDir(dirname, timenow, locationName, lat, lon, username)
                     Toast.makeText(this@HomeActivity, "Koleksi berhasil dibuat!", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this@HomeActivity, ProcessActivity::class.java)
                     intent.putExtra("collection_name", dirname)
@@ -112,7 +124,7 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            val collections = repository.scanCollectionsDir()
+            val collections = repository.scanCollectionsDir(username)
             if (collections.isEmpty()) {
                 binding.rvCollections.visibility = View.GONE
                 binding.emptyPrompt.visibility = View.VISIBLE

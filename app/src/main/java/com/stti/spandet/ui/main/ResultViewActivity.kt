@@ -12,13 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.stti.spandet.R
 import com.stti.spandet.data.Repository
 import com.stti.spandet.databinding.ActivityResultViewBinding
-import com.stti.spandet.ui.info.AdjacentDefectFragment
 import com.stti.spandet.ui.info.EmptyDetectFragment
-import com.stti.spandet.ui.info.GeometryDefectFragment
-import com.stti.spandet.ui.info.IntegrityDefectFragment
-import com.stti.spandet.ui.info.NoDefectFragment
-import com.stti.spandet.ui.info.NonpenDefectFragment
-import com.stti.spandet.ui.info.PostprocDefectFragment
 import com.stti.spandet.ui.info.SpandukFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -99,8 +93,8 @@ class ResultViewActivity : AppCompatActivity() {
             }
         }
 
-        binding.fabDelete.setOnClickListener {
-            showDeleteConfirmationDialog(resultImageUri, originalImageUri)
+        binding.fabBack.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
         }
 
 

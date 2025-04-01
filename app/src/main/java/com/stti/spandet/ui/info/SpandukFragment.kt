@@ -14,6 +14,7 @@ import com.stti.spandet.tools.convertIsoToReadable
 import com.stti.spandet.tools.convertMillisToIsoTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SpandukFragment : Fragment() {
 
@@ -36,9 +37,12 @@ class SpandukFragment : Fragment() {
         }
         repository = Repository(requireContext())
 
-        if(latitude != null && longitude != null){
+        if (latitude != null && longitude != null) {
             lifecycleScope.launch(Dispatchers.IO) {
-                locationString = repository.reverseGeocodeLocation(latitude!!,longitude!!)
+                val result = repository.reverseGeocodeLocation(latitude!!, longitude!!)
+                withContext(Dispatchers.Main) {
+                    view?.findViewById<TextView>(R.id.tv_location_text)?.text = result
+                }
             }
         }
 

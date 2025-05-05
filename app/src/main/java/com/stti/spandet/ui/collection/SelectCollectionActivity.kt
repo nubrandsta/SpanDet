@@ -10,6 +10,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.stti.spandet.data.Repository
+import com.stti.spandet.data.preferences.UserPreferences
 import com.stti.spandet.databinding.ActivitySelectCollectionBinding
 import com.stti.spandet.ui.main.CollectionViewActivity
 import kotlinx.coroutines.launch
@@ -18,6 +19,9 @@ class SelectCollectionActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySelectCollectionBinding
     private lateinit var repository: Repository
+
+    private lateinit var prefs : UserPreferences
+    private var username = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,10 +44,12 @@ class SelectCollectionActivity : AppCompatActivity() {
 
         repository = Repository(this)
 
+        prefs = UserPreferences(this)
+        username = prefs.getUsername().toString()
 
 
         lifecycleScope.launch {
-            val collections = repository.scanCollectionsDir().map { it.name }
+            val collections = repository.scanCollectionsDir(username).map { it.name }
             if (collections.isEmpty()) {
                 binding.spinnerCollections.adapter = ArrayAdapter(this@SelectCollectionActivity, android.R.layout.simple_spinner_item, listOf("Pilih Koleksi"))
 //                binding.btnSelect.text = "Buat Koleksi"

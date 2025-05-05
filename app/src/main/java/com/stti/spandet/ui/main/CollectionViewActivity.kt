@@ -35,6 +35,9 @@ class CollectionViewActivity : AppCompatActivity() {
     private lateinit var repository: Repository
 
     private var collectionName: String? = null
+    private var latitude: Double = 0.0
+    private var longitude: Double = 0.0
+    private var timestamp: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +60,10 @@ class CollectionViewActivity : AppCompatActivity() {
             if (collection != null) {
                 Log.d("Process", "Collection Metadata: $collection")
                 binding.tvDate.text = collection.locationString
+
+                latitude = collection.lat
+                longitude = collection.lon
+                timestamp = collection.timestamp
             } else {
                 Toast.makeText(this@CollectionViewActivity, "Collection not found", Toast.LENGTH_SHORT).show()
             }
@@ -73,12 +80,8 @@ class CollectionViewActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.fabReport.setOnClickListener {
-            CoroutineScope(Dispatchers.Main).launch {
-                showProgressBar()
-                exportResultsToExcel()
-                hideProgressBar()
-            }
+        binding.fabBack.setOnClickListener {
+            finish()
         }
 
         // Initialize the adapter
@@ -92,11 +95,12 @@ class CollectionViewActivity : AppCompatActivity() {
             intent.putExtra("originalImage", resultImage.originalUri.toString())
 
             intent.putExtra("isEmpty", resultImage.isEmpty)
-            intent.putExtra("adjCount", resultImage.classOccurence.adj)
-            intent.putExtra("intCount", resultImage.classOccurence.int)
-            intent.putExtra("geoCount", resultImage.classOccurence.geo)
-            intent.putExtra("postCount", resultImage.classOccurence.pro)
-            intent.putExtra("nonCount", resultImage.classOccurence.non)
+            intent.putExtra("spandukCount", resultImage.classOccurence.spanduk)
+
+            intent.putExtra("latitude", latitude)
+            intent.putExtra("longitude", longitude)
+            intent.putExtra("timestamp", timestamp)
+
             startActivity(intent)
         }
 
@@ -170,11 +174,7 @@ class CollectionViewActivity : AppCompatActivity() {
                 row.createCell(3).setCellValue(if (resultImage.classOccurence == ClassOccurence()) "OK" else "Cacat")
 
                 // Jumlah Cacat columns
-                row.createCell(4).setCellValue(resultImage.classOccurence.adj.toDouble())
-                row.createCell(5).setCellValue(resultImage.classOccurence.int.toDouble())
-                row.createCell(6).setCellValue(resultImage.classOccurence.geo.toDouble())
-                row.createCell(7).setCellValue(resultImage.classOccurence.non.toDouble())
-                row.createCell(8).setCellValue(resultImage.classOccurence.pro.toDouble())
+                row.createCell(4).setCellValue(resultImage.classOccurence.spanduk.toDouble())
             }
 
             // Save the workbook to external storage

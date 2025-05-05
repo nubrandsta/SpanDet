@@ -38,7 +38,8 @@ class collectionListAdapter (
 
                 tvName.text = collection.locationString
                 tvDate.text = timeReadable
-                tvCount.text = collection.imgCount.toString()
+                tvCount.text = collection.imgCount.toString() + " Gambar"
+                tvDetections.text = collection.detections.toString() + " Spanduk"
 
 
                 root.setOnClickListener {

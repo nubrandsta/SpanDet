@@ -94,6 +94,7 @@
         android:layout_height="0dp"
         android:backgroundTint="@color/grey_900"
         android:visibility="visible"
+        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

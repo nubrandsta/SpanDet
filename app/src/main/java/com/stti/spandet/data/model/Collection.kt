@@ -8,4 +8,5 @@ data class Collection (
     val locationString: String,
     val lat: Double,
     val lon: Double
+    , val owner: String
 )

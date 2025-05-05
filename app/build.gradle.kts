@@ -66,6 +66,11 @@ dependencies {
     implementation(libs.xmlbeans)
     implementation(libs.play.services.location)
 
+// HTTP
+    implementation(libs.retrofit)
+    implementation(libs.retrofit2.converter.gson)
+    implementation(libs.logging.interceptor)
+
 
 
     testImplementation(libs.junit)

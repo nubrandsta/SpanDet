@@ -12,8 +12,8 @@ import androidx.core.view.WindowInsetsCompat
 import com.stti.spandet.R
 import com.stti.spandet.data.Repository
 import com.stti.spandet.databinding.ActivityResultViewBinding
-import com.stti.spandet.ui.info.EmptyDetectFragment
-import com.stti.spandet.ui.info.SpandukFragment
+import com.stti.spandet.ui.details.EmptyDetectFragment
+import com.stti.spandet.ui.details.SpandukFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

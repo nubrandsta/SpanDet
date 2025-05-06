@@ -1,4 +1,4 @@
-package com.stti.spandet.ui.main
+package com.stti.spandet.ui.home
 
 import android.content.Intent
 import android.os.Bundle
@@ -14,6 +14,7 @@ import com.stti.spandet.data.preferences.UserPreferences
 import com.stti.spandet.databinding.ActivityMainBinding
 import com.stti.spandet.ui.collection.CreateCollectionActivity
 import com.stti.spandet.ui.collection.SelectCollectionActivity
+import com.stti.spandet.ui.main.CollectionViewActivity
 import com.stti.spandet.ui.main.adapters.collectionListAdapter
 import kotlinx.coroutines.launch
 

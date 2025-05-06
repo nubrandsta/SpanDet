@@ -10,6 +10,12 @@ data class ResponseLogin(
     @field:SerializedName("username")
     val username: String? = null,
 
+    @field:SerializedName("full_name")
+    val fullName: String? = null,
+
+    @field:SerializedName("group")
+    val group: String? = null,
+
     @field:SerializedName("session")
     val session: String? = null,
 

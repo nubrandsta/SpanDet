@@ -1,4 +1,4 @@
-package com.stti.spandet.spandet
+package com.stti.spandet.ui.home
 
 import android.Manifest
 import android.content.Intent
@@ -24,6 +24,7 @@ import com.google.android.gms.location.LocationServices
 import com.stti.spandet.data.Repository
 import com.stti.spandet.data.preferences.UserPreferences
 import com.stti.spandet.databinding.ActivityHomeBinding
+import com.stti.spandet.ui.collection.ProcessActivity
 import com.stti.spandet.tools.convertMillisToDirName
 import com.stti.spandet.ui.main.CollectionViewActivity
 import com.stti.spandet.ui.main.adapters.collectionListAdapter

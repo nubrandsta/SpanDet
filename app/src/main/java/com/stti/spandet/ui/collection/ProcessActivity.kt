@@ -1,4 +1,4 @@
-package com.stti.spandet.spandet
+package com.stti.spandet.ui.collection
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES

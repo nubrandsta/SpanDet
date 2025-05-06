@@ -9,8 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.stti.spandet.databinding.ActivitySplashBinding
-import com.stti.spandet.spandet.LoginActivity
-import com.stti.spandet.ui.main.MainActivity
+import com.stti.spandet.ui.auth.LoginActivity
 
 class SplashActivity : AppCompatActivity() {
     private lateinit var binding : ActivitySplashBinding

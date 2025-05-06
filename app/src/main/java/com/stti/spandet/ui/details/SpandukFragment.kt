@@ -1,4 +1,4 @@
-package com.stti.spandet.ui.info
+package com.stti.spandet.ui.details
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.stti.spandet.R
 import com.stti.spandet.data.Repository
-import com.stti.spandet.databinding.FragmentSpandukBinding
 import com.stti.spandet.tools.convertIsoToReadable
 import com.stti.spandet.tools.convertMillisToIsoTime
 import kotlinx.coroutines.Dispatchers

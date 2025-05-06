@@ -1,4 +1,4 @@
-package com.stti.spandet.ui.info
+package com.stti.spandet.ui.details
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

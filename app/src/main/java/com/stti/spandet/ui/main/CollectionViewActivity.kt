@@ -17,7 +17,7 @@ import com.stti.spandet.R
 import com.stti.spandet.data.Repository
 import com.stti.spandet.data.model.ClassOccurence
 import com.stti.spandet.databinding.ActivityCollectionViewBinding
-import com.stti.spandet.spandet.ProcessActivity
+import com.stti.spandet.ui.collection.ProcessActivity
 import com.stti.spandet.ui.main.adapters.resultListAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

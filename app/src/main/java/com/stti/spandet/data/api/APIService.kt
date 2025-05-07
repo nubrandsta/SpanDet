@@ -25,7 +25,7 @@ interface ApiService {
     @FormUrlEncoded
     @POST("/api/validate-token")
     suspend fun validateToken(
-        @Field("token") token: String
+        @Field("session") token: String
     ): ResponseValidate
 
     @FormUrlEncoded

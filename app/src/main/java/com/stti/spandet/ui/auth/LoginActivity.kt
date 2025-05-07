@@ -51,7 +51,6 @@ class LoginActivity : AppCompatActivity() {
             val usernameInput = binding.etUsername.text?.trim().toString()
             val passwordInput = binding.etPassword.text?.trim().toString()
 
-            // Only proceed with login if both fields are not empty
             if(!usernameInput.isEmpty() && !passwordInput.isEmpty()){
                 binding.progressBar.visibility = View.VISIBLE
                 viewModel.login(usernameInput, passwordInput).observe(this){result ->
@@ -78,6 +77,11 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Username dan password harus diisi", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        binding.btnChangePass.setOnClickListener {
+            val intent = Intent(this, ChangePasswordActivity::class.java)
+            startActivity(intent)
         }
     }
 

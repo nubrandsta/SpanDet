@@ -46,6 +46,8 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var prefs: UserPreferences
 
     private var username:String = ""
+    private var fullname:String = ""
+    private var group:String = ""
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,8 +71,10 @@ class HomeActivity : AppCompatActivity() {
         prefs = UserPreferences(this)
 
         username = prefs.getUsername().toString()
+        fullname = prefs.getFullName().toString()
+        group = prefs.getGroup().toString()
 
-        binding.tvName.text = "Selamat Datang, ${username}"
+        binding.tvName.text = "Selamat Datang, ${fullname}"
 
         adapter = collectionListAdapter { collection ->
             // intent to collection view activity

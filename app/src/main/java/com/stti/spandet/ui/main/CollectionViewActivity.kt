@@ -17,6 +17,9 @@ import com.stti.spandet.R
 import com.stti.spandet.data.Repository
 import com.stti.spandet.data.model.ClassOccurence
 import com.stti.spandet.databinding.ActivityCollectionViewBinding
+import com.stti.spandet.tools.convertIsoToReadable
+import com.stti.spandet.tools.convertMillisToDirName
+import com.stti.spandet.tools.convertMillisToIsoTime
 import com.stti.spandet.ui.collection.ProcessActivity
 import com.stti.spandet.ui.main.adapters.resultListAdapter
 import kotlinx.coroutines.CoroutineScope
@@ -59,11 +62,17 @@ class CollectionViewActivity : AppCompatActivity() {
             val collection = repository.getCollectionMetadata(collection_name!!)
             if (collection != null) {
                 Log.d("Process", "Collection Metadata: $collection")
-                binding.tvDate.text = collection.locationString
+
 
                 latitude = collection.lat
                 longitude = collection.lon
                 timestamp = collection.timestamp
+
+                val isotime = convertMillisToIsoTime(timestamp)
+                val readabletime = convertIsoToReadable(isotime)
+
+                binding.tvSubheading.text = collection.locationString
+                binding.tvDate.text = readabletime
             } else {
                 Toast.makeText(this@CollectionViewActivity, "Collection not found", Toast.LENGTH_SHORT).show()
             }

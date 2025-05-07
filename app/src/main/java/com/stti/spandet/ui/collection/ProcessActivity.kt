@@ -166,9 +166,27 @@ class ProcessActivity : AppCompatActivity() {
 
         spanduk_detector.setup()
 
-        adapter = imageListAdapter { processImage ->
-            // Handle click on processImage if needed
-        }
+        adapter = imageListAdapter(
+            onClick = { processImage ->
+                // Handle click on processImage if needed
+            },
+            onDelete = { processImage ->
+                // Handle delete action
+                val position = images.indexOf(processImage)
+                if (position != -1) {
+                    images.removeAt(position)
+                    adapter.submitList(images.toList())
+                    adapter.notifyDataSetChanged()
+                    
+                    // Update UI visibility based on images list
+                    if (images.isEmpty()) {
+                        binding.rvCollection.visibility = View.GONE
+                        binding.emptyPrompt.visibility = View.VISIBLE
+                        binding.uploadButton.isEnabled = false
+                    }
+                }
+            }
+        )
 
         binding.rvCollection.adapter = adapter
         binding.rvCollection.layoutManager = GridLayoutManager(this, 2)
@@ -637,7 +655,7 @@ class ProcessActivity : AppCompatActivity() {
     private fun uploadProcessedImages(processedImages: List<ProcessImage>, collectionName: String) {
         // Create and show upload dialog
         uploadDialog = androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Mengunggah Gambar")
+            .setTitle("Mengupload Gambar")
             .setCancelable(false)
             .setView(layoutInflater.inflate(R.layout.dialog_processing, null))
             .create()
@@ -655,7 +673,7 @@ class ProcessActivity : AppCompatActivity() {
             // Set up the progress bar
             uploadProgressBar?.max = totalImages
             uploadProgressBar?.progress = 0
-            uploadProgressText?.text = "Mengunggah gambar 0 dari $totalImages"
+            uploadProgressText?.text = "Mengupload gambar 0 dari $totalImages"
             
             var successCount = 0
             var failCount = 0
@@ -663,7 +681,7 @@ class ProcessActivity : AppCompatActivity() {
             processedImages.forEachIndexed { index, processImage ->
                 // Update dialog for current image
                 val currentImageNumber = index + 1
-                uploadProgressText?.text = "Mengunggah gambar $currentImageNumber dari $totalImages"
+                uploadProgressText?.text = "Mengupload gambar $currentImageNumber dari $totalImages"
                 uploadCurrentImageText?.text = "Menyiapkan gambar..."
                 
                 // Get the result image file
@@ -671,7 +689,7 @@ class ProcessActivity : AppCompatActivity() {
                 val imageFile = File(resultDir, "${processImage.fileName}.jpg")
                 
                 if (imageFile.exists()) {
-                    uploadCurrentImageText?.text = "Mengunggah gambar..."
+                    uploadCurrentImageText?.text = "Mengupload gambar..."
                     
                     // Call the ViewModel to upload the image
                     viewModel.uploadImage(
@@ -690,7 +708,7 @@ class ProcessActivity : AppCompatActivity() {
                         if(result !=null) {
                             when (result) {
                                 is ResultState.Success -> {
-                                    uploadCurrentImageText?.text = "Berhasil mengunggah gambar"
+                                    uploadCurrentImageText?.text = "Berhasil mengupload gambar"
                                     successCount++
                                     uploadProgressBar?.progress = currentImageNumber
 
@@ -707,7 +725,7 @@ class ProcessActivity : AppCompatActivity() {
 
                                 is ResultState.Error -> {
                                     uploadCurrentImageText?.text =
-                                        "Gagal mengunggah: ${result.errorMessage}"
+                                        "Gagal mengupload: ${result.errorMessage}"
                                     failCount++
                                     uploadProgressBar?.progress = currentImageNumber
 
@@ -723,7 +741,7 @@ class ProcessActivity : AppCompatActivity() {
                                 }
 
                                 is ResultState.Loading -> {
-                                    uploadCurrentImageText?.text = "Sedang mengunggah..."
+                                    uploadCurrentImageText?.text = "Sedang mengupload..."
                                 }
                             }
                         }
@@ -743,8 +761,8 @@ class ProcessActivity : AppCompatActivity() {
     }
     
     private fun completeUpload(totalImages: Int, successCount: Int, failCount: Int, collectionName: String) {
-        uploadProgressText?.text = "Unggahan Selesai!"
-        uploadCurrentImageText?.text = "Berhasil: $successCount, Gagal: $failCount dari $totalImages gambar"
+        uploadProgressText?.text = "Upload Selesai!"
+        uploadCurrentImageText?.text = "Berhasil: $successCount gambar, Gagal: $failCount dari $totalImages gambar"
         
         // Delay slightly to show completion message
         CoroutineScope(Dispatchers.Main).launch {

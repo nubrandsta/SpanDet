@@ -90,6 +90,9 @@ class CollectionViewActivity : AppCompatActivity() {
         }
 
         binding.fabBack.setOnClickListener {
+            val intent = Intent(this, com.stti.spandet.ui.home.HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
             finish()
         }
 

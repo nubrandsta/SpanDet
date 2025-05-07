@@ -11,23 +11,33 @@ import com.stti.spandet.databinding.ItemProcessBinding
 import com.stti.spandet.ui.main.adapters.imageListAdapter.MyViewHolder.Companion.DIFF_CALLBACK_IMAGE
 
 class imageListAdapter (
-    private val onClick: (ProcessImage) -> Unit
+    private val onClick: (ProcessImage) -> Unit,
+    private val onDelete: (ProcessImage) -> Unit = {}
 ) : ListAdapter<ProcessImage, imageListAdapter.MyViewHolder>(DIFF_CALLBACK_IMAGE) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding =
             ItemProcessBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return MyViewHolder(binding, onClick)
+        return MyViewHolder(binding, onClick, onDelete)
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val list = getItem(position)
         holder.bind(list)
     }
+    
+    fun removeItem(position: Int) {
+        val currentList = currentList.toMutableList()
+        if (position >= 0 && position < currentList.size) {
+            currentList.removeAt(position)
+            submitList(currentList)
+        }
+    }
 
     class MyViewHolder(
         private val binding: ItemProcessBinding,
-        private val onClick: (ProcessImage) -> Unit
+        private val onClick: (ProcessImage) -> Unit,
+        private val onDelete: (ProcessImage) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(image: ProcessImage) {
             binding.apply {
@@ -38,13 +48,14 @@ class imageListAdapter (
                     binding.ivIcon.setImageURI(it)
                 }
 
-
                 root.setOnClickListener {
                     onClick(image)
-
+                }
+                
+                btnDelete.setOnClickListener {
+                    onDelete(image)
                 }
             }
-
         }
 
         companion object {

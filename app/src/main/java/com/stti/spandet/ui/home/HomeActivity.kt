@@ -75,6 +75,26 @@ class HomeActivity : AppCompatActivity() {
         group = prefs.getGroup().toString()
 
         binding.tvName.text = "Selamat Datang, ${fullname}"
+        
+        // Set up logout button click listener
+        binding.btnLogout.setOnClickListener {
+            // Show confirmation dialog
+            AlertDialog.Builder(this)
+                .setTitle("Konfirmasi Logout")
+                .setMessage("Apakah Anda yakin ingin keluar dari aplikasi?")
+                .setPositiveButton("Ya") { _, _ ->
+                    // Clear user session
+                    prefs.clear()
+                    
+                    // Navigate to login activity
+                    val intent = Intent(this, com.stti.spandet.ui.auth.LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+                .setNegativeButton("Tidak", null)
+                .show()
+        }
 
         adapter = collectionListAdapter { collection ->
             // intent to collection view activity
@@ -88,7 +108,7 @@ class HomeActivity : AppCompatActivity() {
         binding.rvCollections.adapter = adapter
 
         lifecycleScope.launch {
-            val collections = repository.scanCollectionsDir(username)
+            val collections = repository.scanCollectionsDir(username).sortedByDescending { it.timestamp }.sortedByDescending { it.timestamp }
             if (collections.isEmpty()) {
                 binding.rvCollections.visibility = View.GONE
                 binding.emptyPrompt.visibility = View.VISIBLE
@@ -129,7 +149,7 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            val collections = repository.scanCollectionsDir(username)
+            val collections = repository.scanCollectionsDir(username).sortedByDescending { it.timestamp }.sortedByDescending { it.timestamp }
             if (collections.isEmpty()) {
                 binding.rvCollections.visibility = View.GONE
                 binding.emptyPrompt.visibility = View.VISIBLE

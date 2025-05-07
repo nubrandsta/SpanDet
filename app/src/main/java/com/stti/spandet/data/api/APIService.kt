@@ -29,7 +29,7 @@ interface ApiService {
     ): ResponseValidate
 
     @FormUrlEncoded
-    @POST("/api/change-pass")
+    @POST("/api/change-password")
     suspend fun changePassword(
         @Field("username") username: String,
         @Field("old_password") old_pass: String,

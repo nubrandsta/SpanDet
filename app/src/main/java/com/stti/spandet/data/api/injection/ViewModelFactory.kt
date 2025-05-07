@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.stti.spandet.data.api.APIRepository
 import com.stti.spandet.ui.auth.ChangePasswordViewModel
 import com.stti.spandet.ui.auth.LoginViewModel
+import com.stti.spandet.ui.collection.UploadImageViewModel
 import com.stti.spandet.ui.init.SplashViewModel
 
 class ViewModelFactory private constructor(private val repository: APIRepository) :
@@ -25,6 +26,10 @@ class ViewModelFactory private constructor(private val repository: APIRepository
             modelClass.isAssignableFrom(SplashViewModel::class.java) -> {
                 @Suppress("UNCHECKED_CAST")
                 return SplashViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(UploadImageViewModel::class.java) -> {
+                @Suppress("UNCHECKED_CAST")
+                return UploadImageViewModel(repository) as T
             }
 
 

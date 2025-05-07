@@ -1,5 +1,7 @@
 package com.stti.spandet.ui.collection
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VIDEO
@@ -11,6 +13,9 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.location.Address
+import android.location.Geocoder
+import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -22,13 +27,18 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.stti.spandet.R
 import com.stti.spandet.data.Repository
+import com.stti.spandet.data.api.ResultState
 import com.stti.spandet.data.model.BoundingBox
 import com.stti.spandet.data.model.ProcessImage
 import com.stti.spandet.databinding.ActivityProcessBinding
@@ -49,6 +59,7 @@ import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Locale
 import androidx.core.graphics.scale
 import com.stti.spandet.data.api.injection.ViewModelFactory
 import com.stti.spandet.data.preferences.UserPreferences
@@ -77,6 +88,17 @@ class ProcessActivity : AppCompatActivity() {
     private var session: String = ""
 
     private var currentImageUri: Uri? = null
+    
+    // Location related variables
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var currentLat: Double = 0.0
+    private var currentLon: Double = 0.0
+    private var currentThoroughfare: String = ""
+    private var currentSubLocality: String = ""
+    private var currentLocality: String = ""
+    private var currentSubAdminArea: String = ""
+    private var currentAdminArea: String = ""
+    private var currentPostalCode: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,6 +114,10 @@ class ProcessActivity : AppCompatActivity() {
         factory = ViewModelFactory.getInstance()
         val preferences = UserPreferences(this)
         session = preferences.getToken().toString()
+        
+        // Initialize location services
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        checkLocationPermission()
 
         val requestPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
 
@@ -225,19 +251,35 @@ class ProcessActivity : AppCompatActivity() {
     }
 
     private fun addImageToAdapter(uri: Uri) {
-        val newImage = ProcessImage(uri)
-        images.add(newImage)
-        adapter.submitList(images.toList())
-        adapter.notifyDataSetChanged()
+        // Get current location when image is added
+        getCurrentLocation { lat, lon ->
+            // Create ProcessImage with location data
+            val newImage = ProcessImage(
+                uri = uri,
+                session = session,
+                lat = lat,
+                lon = lon,
+                thoroughfare = currentThoroughfare,
+                subLocality = currentSubLocality,
+                locality = currentLocality,
+                subAdminArea = currentSubAdminArea,
+                adminArea = currentAdminArea,
+                postalCode = currentPostalCode
+            )
+            
+            images.add(newImage)
+            adapter.submitList(images.toList())
+            adapter.notifyDataSetChanged()
 
-        if (images.isEmpty()) {
-            binding.rvCollection.visibility = View.GONE
-            binding.emptyPrompt.visibility = View.VISIBLE
-            binding.uploadButton.isEnabled = false
-        } else {
-            binding.rvCollection.visibility = View.VISIBLE
-            binding.emptyPrompt.visibility = View.GONE
-            binding.uploadButton.isEnabled = true
+            if (images.isEmpty()) {
+                binding.rvCollection.visibility = View.GONE
+                binding.emptyPrompt.visibility = View.VISIBLE
+                binding.uploadButton.isEnabled = false
+            } else {
+                binding.rvCollection.visibility = View.VISIBLE
+                binding.emptyPrompt.visibility = View.GONE
+                binding.uploadButton.isEnabled = true
+            }
         }
     }
 
@@ -246,6 +288,12 @@ class ProcessActivity : AppCompatActivity() {
     private var dialogProgressBar: android.widget.ProgressBar? = null
     private var dialogProgressText: android.widget.TextView? = null
     private var dialogCurrentImageText: android.widget.TextView? = null
+    
+    // Upload dialog components
+    private var uploadDialog: androidx.appcompat.app.AlertDialog? = null
+    private var uploadProgressBar: android.widget.ProgressBar? = null
+    private var uploadProgressText: android.widget.TextView? = null
+    private var uploadCurrentImageText: android.widget.TextView? = null
     
     private fun processAllImages(collectionName: String) {
         // Create and show a processing dialog
@@ -270,6 +318,9 @@ class ProcessActivity : AppCompatActivity() {
             dialogProgressBar?.progress = 0
             dialogProgressText?.text = "Memproses gambar 0 dari $totalImages"
             
+            // Create a new list to store processed images with detection data
+            val processedImages = mutableListOf<ProcessImage>()
+            
             images.forEachIndexed { index, processImage ->
                 // Update dialog for current image
                 val currentImageNumber = index + 1
@@ -283,41 +334,46 @@ class ProcessActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         dialogCurrentImageText?.text = "Menyimpan gambar..."
                     }
-                    saveOriginalImage(processImage.uri, collectionName, timeNow)
+                    val originalFile = saveOriginalImage(processImage.uri, collectionName, timeNow)
                     
                     // Update UI for detection phase
                     withContext(Dispatchers.Main) {
                         dialogCurrentImageText?.text = "Melakukan deteksi..."
                     }
-                    processSpandukDetection(processImage.uri, collectionName, timeNow)
+                    val numDetections = processSpandukDetection(processImage.uri, collectionName, timeNow)
+                    
+                    // Create a new ProcessImage with all required data for upload
+                    val updatedImage = processImage.copy(
+                        originalUri = Uri.fromFile(originalFile),
+                        fileName = "${collectionName}_${timeNow}",
+                        isEmpty = numDetections == 0,
+                        spandukCount = numDetections
+                    )
+                    
+                    processedImages.add(updatedImage)
                 }
                 
                 // Update progress
                 dialogProgressBar?.progress = currentImageNumber
             }
             
-            // Show completion message briefly before dismissing
+            // Show completion message
             dialogProgressText?.text = "Pemrosesan Selesai!"
             dialogCurrentImageText?.text = "Memproses $totalImages gambar"
             
             // Delay slightly to show completion message
             delay(1000)
             
-            // Dismiss dialog when complete
+            // Dismiss detection dialog
             processingDialog?.dismiss()
             
-            // Navigate to collection view
-            Intent(this@ProcessActivity, CollectionViewActivity::class.java).apply {
-                putExtra("collection_name", collectionName)
-                startActivity(this)
-            }
-            
-            finish()
+            // Start upload process
+            uploadProcessedImages(processedImages, collectionName)
         }
     }
 
 
-    private fun processSpandukDetection(uri: Uri, collectionName: String, timeNow: Long) {
+    private fun processSpandukDetection(uri: Uri, collectionName: String, timeNow: Long): Int {
         Log.d("ProcessImage", "Memulai Deteksi Gambar: $uri")
 
         // Update UI with current status
@@ -325,7 +381,7 @@ class ProcessActivity : AppCompatActivity() {
             dialogCurrentImageText?.text = "memuat Gambar..."
         }
         
-        val bitmap = uriToBitmap(uri) ?: return
+        val bitmap = uriToBitmap(uri) ?: return 0
         
         CoroutineScope(Dispatchers.Main).launch {
             dialogCurrentImageText?.text = "Menyiapkan Gambar..."
@@ -347,7 +403,7 @@ class ProcessActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.Main).launch {
                 dialogCurrentImageText?.text = "Error during detection: ${e.message}"
             }
-            return
+            return 0
         }
 
         val detectedBoxes = spanduk_detector.bestBox(output.floatArray)
@@ -399,7 +455,10 @@ class ProcessActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.Main).launch {
                 dialogCurrentImageText?.text = "Error saving results: ${e.message}"
             }
+            return 0
         }
+        
+        return numDetections
     }
 
 
@@ -511,6 +570,214 @@ class ProcessActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+            ActivityCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
+        } else {
+            // Permission already granted, get initial location
+            getCurrentLocation()
+        }
+    }
+    
+    private fun getCurrentLocation(callback: ((Double, Double) -> Unit)? = null) {
+        if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ActivityCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    currentLat = location.latitude
+                    currentLon = location.longitude
+                    reverseGeocode(currentLat, currentLon)
+                    callback?.invoke(currentLat, currentLon)
+                } else {
+                    Toast.makeText(this, "Gagal mendapatkan lokasi", Toast.LENGTH_SHORT).show()
+                    callback?.invoke(0.0, 0.0)
+                }
+            }.addOnFailureListener {
+                Toast.makeText(this, "Gagal mendapatkan lokasi", Toast.LENGTH_SHORT).show()
+                callback?.invoke(0.0, 0.0)
+            }
+        } else {
+            Toast.makeText(this, "Izin lokasi diperlukan", Toast.LENGTH_SHORT).show()
+            callback?.invoke(0.0, 0.0)
+        }
+    }
+    
+    private fun reverseGeocode(latitude: Double, longitude: Double) {
+        try {
+            val geocoder = Geocoder(this, Locale.getDefault())
+            val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
+            
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0]
+                
+                // Store all address components
+                currentThoroughfare = address.thoroughfare ?: ""
+                currentSubLocality = address.subLocality ?: ""
+                currentLocality = address.locality ?: ""
+                currentSubAdminArea = address.subAdminArea ?: ""
+                currentAdminArea = address.adminArea ?: ""
+                currentPostalCode = address.postalCode ?: ""
+                
+                Log.d("Location", "Address found: $currentSubLocality, $currentLocality, $currentAdminArea")
+            } else {
+                Log.d("Location", "No address found for coordinates: $latitude, $longitude")
+            }
+        } catch (e: Exception) {
+            Log.e("Location", "Error getting address: ${e.message}")
+        }
+    }
+    
+    private fun uploadProcessedImages(processedImages: List<ProcessImage>, collectionName: String) {
+        // Create and show upload dialog
+        uploadDialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Mengunggah Gambar")
+            .setCancelable(false)
+            .setView(layoutInflater.inflate(R.layout.dialog_processing, null))
+            .create()
+        
+        uploadDialog?.show()
+        
+        // Get dialog views
+        uploadProgressBar = uploadDialog?.findViewById(R.id.dialog_progress_bar)
+        uploadProgressText = uploadDialog?.findViewById(R.id.dialog_progress_text)
+        uploadCurrentImageText = uploadDialog?.findViewById(R.id.dialog_current_image_text)
+        
+        CoroutineScope(Dispatchers.Main).launch {
+            val totalImages = processedImages.size
+            
+            // Set up the progress bar
+            uploadProgressBar?.max = totalImages
+            uploadProgressBar?.progress = 0
+            uploadProgressText?.text = "Mengunggah gambar 0 dari $totalImages"
+            
+            var successCount = 0
+            var failCount = 0
+            
+            processedImages.forEachIndexed { index, processImage ->
+                // Update dialog for current image
+                val currentImageNumber = index + 1
+                uploadProgressText?.text = "Mengunggah gambar $currentImageNumber dari $totalImages"
+                uploadCurrentImageText?.text = "Menyiapkan gambar..."
+                
+                // Get the result image file
+                val resultDir = getResultDirectory(collectionName)
+                val imageFile = File(resultDir, "${processImage.fileName}.jpg")
+                
+                if (imageFile.exists()) {
+                    uploadCurrentImageText?.text = "Mengunggah gambar..."
+                    
+                    // Call the ViewModel to upload the image
+                    viewModel.uploadImage(
+                        session = processImage.session,
+                        lat = processImage.lat,
+                        lon = processImage.lon,
+                        thoroughfare = processImage.thoroughfare,
+                        subloc = processImage.subLocality,
+                        locality = processImage.locality,
+                        subadmin = processImage.subAdminArea,
+                        adminArea = processImage.adminArea,
+                        postalcode = processImage.postalCode,
+                        spandukCount = processImage.spandukCount,
+                        image = imageFile
+                    ).observe(this@ProcessActivity) { result ->
+                        if(result !=null) {
+                            when (result) {
+                                is ResultState.Success -> {
+                                    uploadCurrentImageText?.text = "Berhasil mengunggah gambar"
+                                    successCount++
+                                    uploadProgressBar?.progress = currentImageNumber
+
+                                    // Check if all uploads are complete
+                                    if (currentImageNumber >= totalImages) {
+                                        completeUpload(
+                                            totalImages,
+                                            successCount,
+                                            failCount,
+                                            collectionName
+                                        )
+                                    }
+                                }
+
+                                is ResultState.Error -> {
+                                    uploadCurrentImageText?.text =
+                                        "Gagal mengunggah: ${result.errorMessage}"
+                                    failCount++
+                                    uploadProgressBar?.progress = currentImageNumber
+
+                                    // Check if all uploads are complete
+                                    if (currentImageNumber >= totalImages) {
+                                        completeUpload(
+                                            totalImages,
+                                            successCount,
+                                            failCount,
+                                            collectionName
+                                        )
+                                    }
+                                }
+
+                                is ResultState.Loading -> {
+                                    uploadCurrentImageText?.text = "Sedang mengunggah..."
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    uploadCurrentImageText?.text = "File gambar tidak ditemukan"
+                    failCount++
+                    uploadProgressBar?.progress = currentImageNumber
+                    
+                    // Check if all uploads are complete
+                    if (currentImageNumber >= totalImages) {
+                        completeUpload(totalImages, successCount, failCount, collectionName)
+                    }
+                }
+            }
+        }
+    }
+    
+    private fun completeUpload(totalImages: Int, successCount: Int, failCount: Int, collectionName: String) {
+        uploadProgressText?.text = "Unggahan Selesai!"
+        uploadCurrentImageText?.text = "Berhasil: $successCount, Gagal: $failCount dari $totalImages gambar"
+        
+        // Delay slightly to show completion message
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(2000)
+            
+            // Dismiss upload dialog
+            uploadDialog?.dismiss()
+            
+            // Navigate to collection view
+            Intent(this@ProcessActivity, CollectionViewActivity::class.java).apply {
+                putExtra("collection_name", collectionName)
+                startActivity(this)
+            }
+            
+            finish()
+        }
+    }
+    
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation()
+            } else {
+                Toast.makeText(this, "Izin lokasi diperlukan untuk fitur ini", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 100
+    }
+    
     private fun boundingBoxesToJson(boundingBoxes: List<BoundingBox>): JSONObject {
         val jsonArray = org.json.JSONArray()
         boundingBoxes.forEach { box ->

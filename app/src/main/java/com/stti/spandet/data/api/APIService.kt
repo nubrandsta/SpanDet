@@ -41,7 +41,7 @@ interface ApiService {
     suspend fun uploadImage(
         @Part("session") session: RequestBody,
         @Part("lat") lat: RequestBody,
-        @Part("lon") lon: RequestBody,
+        @Part("long") lon: RequestBody,
         @Part("thoroughfare") thoroughfare: RequestBody,
         @Part("subloc") subloc: RequestBody,
         @Part("locality") locality: RequestBody,
@@ -49,7 +49,7 @@ interface ApiService {
         @Part("adminArea") admin: RequestBody,
         @Part("postalcode") postalcode: RequestBody,
         @Part("spandukCount") spandukCount: RequestBody,
-        @Part("image") image: MultipartBody.Part
+        @Part image: MultipartBody.Part
     ) : ResponseUpload
 
 }

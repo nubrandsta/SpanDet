@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -39,6 +40,7 @@ import com.stti.spandet.ui.main.CollectionViewActivity
 import com.stti.spandet.ui.main.adapters.imageListAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -48,6 +50,9 @@ import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.graphics.scale
+import com.stti.spandet.data.api.injection.ViewModelFactory
+import com.stti.spandet.data.preferences.UserPreferences
+
 
 class ProcessActivity : AppCompatActivity() {
 
@@ -55,8 +60,10 @@ class ProcessActivity : AppCompatActivity() {
     private lateinit var adapter: imageListAdapter
     private lateinit var repository: Repository
 
-//    private lateinit var workpiece_detector: Detector
-//    private lateinit var defect_detector: Detector
+    private lateinit var factory: ViewModelFactory
+    private val viewModel by viewModels<UploadImageViewModel> {
+        ViewModelFactory.getInstance()
+    }
 
     private lateinit var spanduk_detector: Detector
 
@@ -66,6 +73,8 @@ class ProcessActivity : AppCompatActivity() {
 
     private var currentImgCount: Int = 0
     private var currentDetections: Int = 0
+
+    private var session: String = ""
 
     private var currentImageUri: Uri? = null
 
@@ -80,10 +89,12 @@ class ProcessActivity : AppCompatActivity() {
             insets
         }
 
-        // Register ActivityResult handler
+        factory = ViewModelFactory.getInstance()
+        val preferences = UserPreferences(this)
+        session = preferences.getToken().toString()
+
         val requestPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-            // Handle permission requests results
-            // See the permission example in the Android platform samples: https://github.com/android/platform-samples
+
         }
 
         // Permission request logic
@@ -96,6 +107,7 @@ class ProcessActivity : AppCompatActivity() {
         }
 
         repository = Repository(this)
+        val prefs = UserPreferences(this)
 
         dirname = intent.getStringExtra("collection_name") ?: return
 
@@ -229,57 +241,130 @@ class ProcessActivity : AppCompatActivity() {
         }
     }
 
+    // Dialog components for progress tracking
+    private var processingDialog: androidx.appcompat.app.AlertDialog? = null
+    private var dialogProgressBar: android.widget.ProgressBar? = null
+    private var dialogProgressText: android.widget.TextView? = null
+    private var dialogCurrentImageText: android.widget.TextView? = null
+    
     private fun processAllImages(collectionName: String) {
+        // Create and show a processing dialog
+        processingDialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Deteksi Spanduk")
+            .setCancelable(false)
+            .setView(layoutInflater.inflate(R.layout.dialog_processing, null))
+            .create()
+        
+        processingDialog?.show()
+        
+        // Get dialog views
+        dialogProgressBar = processingDialog?.findViewById(R.id.dialog_progress_bar)
+        dialogProgressText = processingDialog?.findViewById(R.id.dialog_progress_text)
+        dialogCurrentImageText = processingDialog?.findViewById(R.id.dialog_current_image_text)
+        
         CoroutineScope(Dispatchers.Main).launch {
             val totalImages = images.size
-            binding.progressIndicator.max = totalImages
-            binding.progressIndicator.progress = 0
-            binding.progressIndicator.visibility = View.VISIBLE
-
+            
+            // Set up the progress bar
+            dialogProgressBar?.max = totalImages
+            dialogProgressBar?.progress = 0
+            dialogProgressText?.text = "Memproses gambar 0 dari $totalImages"
+            
             images.forEachIndexed { index, processImage ->
+                // Update dialog for current image
+                val currentImageNumber = index + 1
+                dialogProgressText?.text = "Memproses gambar $currentImageNumber dari $totalImages"
+                dialogCurrentImageText?.text = "Menyimpan gambar..."
+                
                 withContext(Dispatchers.IO) {
                     val timeNow = System.currentTimeMillis()
+                    
+                    // Update UI from background thread
+                    withContext(Dispatchers.Main) {
+                        dialogCurrentImageText?.text = "Menyimpan gambar..."
+                    }
                     saveOriginalImage(processImage.uri, collectionName, timeNow)
+                    
+                    // Update UI for detection phase
+                    withContext(Dispatchers.Main) {
+                        dialogCurrentImageText?.text = "Melakukan deteksi..."
+                    }
                     processSpandukDetection(processImage.uri, collectionName, timeNow)
                 }
-                binding.progressIndicator.progress = index + 1
+                
+                // Update progress
+                dialogProgressBar?.progress = currentImageNumber
             }
-
-            binding.progressIndicator.visibility = View.GONE
-
+            
+            // Show completion message briefly before dismissing
+            dialogProgressText?.text = "Pemrosesan Selesai!"
+            dialogCurrentImageText?.text = "Memproses $totalImages gambar"
+            
+            // Delay slightly to show completion message
+            delay(1000)
+            
+            // Dismiss dialog when complete
+            processingDialog?.dismiss()
+            
+            // Navigate to collection view
             Intent(this@ProcessActivity, CollectionViewActivity::class.java).apply {
                 putExtra("collection_name", collectionName)
                 startActivity(this)
             }
-
+            
             finish()
         }
     }
 
 
     private fun processSpandukDetection(uri: Uri, collectionName: String, timeNow: Long) {
-        Log.d("ProcessImage", "Starting spanduk detection for URI: $uri")
+        Log.d("ProcessImage", "Memulai Deteksi Gambar: $uri")
 
+        // Update UI with current status
+        CoroutineScope(Dispatchers.Main).launch {
+            dialogCurrentImageText?.text = "memuat Gambar..."
+        }
+        
         val bitmap = uriToBitmap(uri) ?: return
+        
+        CoroutineScope(Dispatchers.Main).launch {
+            dialogCurrentImageText?.text = "Menyiapkan Gambar..."
+        }
+        
         val resizedBitmap = bitmap.scale(spanduk_detector.tensorWidth, spanduk_detector.tensorHeight, false)
 
         val tensorImage = spanduk_detector.imageProcessor.process(TensorImage.fromBitmap(resizedBitmap))
         val output = TensorBuffer.createFixedSize(intArrayOf(1, spanduk_detector.numChannel, spanduk_detector.numElements), DataType.FLOAT32)
 
+        CoroutineScope(Dispatchers.Main).launch {
+            dialogCurrentImageText?.text = "Melakukan deteksi..."
+        }
+        
         try {
             spanduk_detector.interpreter?.run(tensorImage.buffer, output.buffer.rewind())
         } catch (e: Exception) {
-            Log.e("ProcessImage", "Error during spanduk detection inference: ${e.message}")
+            Log.e("ProcessImage", "Terjadi Kesalahan Deteksi!: ${e.message}")
+            CoroutineScope(Dispatchers.Main).launch {
+                dialogCurrentImageText?.text = "Error during detection: ${e.message}"
+            }
             return
         }
 
         val detectedBoxes = spanduk_detector.bestBox(output.floatArray)
+        val numDetections = detectedBoxes?.size ?: 0
+        
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!detectedBoxes.isNullOrEmpty()) {
+                dialogCurrentImageText?.text = "Deteksi $numDetections spanduk. Menyimpan Hasil..."
+            } else {
+                dialogCurrentImageText?.text = "Spanduk Tidak Ditemukan, Menyimpan Hasil..."
+            }
+        }
 
         val fileName = "${collectionName}_${timeNow}"
         val resultDir = getResultDirectory(collectionName)
         val jsonFile = File(resultDir, "$fileName.json")
         val imageFile = File(resultDir, "$fileName.jpg")
-        val numDetections = detectedBoxes?.size ?: 0
 
         try {
             if (!detectedBoxes.isNullOrEmpty()) {
@@ -304,8 +389,16 @@ class ProcessActivity : AppCompatActivity() {
                 val newDetections = (current?.detections ?: 0) + numDetections
                 repository.updateCollectionMetadata(collectionName, newImgCount, newDetections)
             }
+            
+            CoroutineScope(Dispatchers.Main).launch {
+                dialogCurrentImageText?.text = "Image processed successfully"
+            }
+            
         } catch (e: Exception) {
             Log.e("ProcessImage", "Failed to save spanduk detection files: ${e.message}")
+            CoroutineScope(Dispatchers.Main).launch {
+                dialogCurrentImageText?.text = "Error saving results: ${e.message}"
+            }
         }
     }
 

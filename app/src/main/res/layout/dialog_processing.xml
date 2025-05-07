@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/dialog_progress_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Memproses gambar 0 dari 0"
+        android:textSize="16sp"
+        android:textAlignment="center"
+        android:layout_marginBottom="8dp" />
+
+    <ProgressBar
+        android:id="@+id/dialog_progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/dialog_current_image_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mohon Tunggu..."
+        android:textSize="14sp"
+        android:textAlignment="center"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>

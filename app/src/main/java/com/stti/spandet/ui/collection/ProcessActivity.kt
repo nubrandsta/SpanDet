@@ -13,6 +13,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import com.stti.spandet.tools.reduceBitmapToFile
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
@@ -689,7 +690,16 @@ class ProcessActivity : AppCompatActivity() {
                 val imageFile = File(resultDir, "${processImage.fileName}.jpg")
                 
                 if (imageFile.exists()) {
-                    uploadCurrentImageText?.text = "Mengupload gambar..."
+                    uploadCurrentImageText?.text = "Mengompres dan mengupload gambar..."
+                    
+                    // Reduce image size before uploading
+                    try {
+                        val bitmap = BitmapFactory.decodeFile(imageFile.path)
+                        reduceBitmapToFile(bitmap, imageFile)
+                        uploadCurrentImageText?.text = "Mengupload gambar..."  
+                    } catch (e: Exception) {
+                        Log.e("Upload", "Error reducing image: ${e.message}")
+                    }
                     
                     // Call the ViewModel to upload the image
                     viewModel.uploadImage(

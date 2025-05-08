@@ -137,6 +137,10 @@ class ChangePasswordActivity : AppCompatActivity() {
             binding.etNewPassword.error = "Password baru harus diisi"
             isValid = false
         }
+        else if(newPasswordInput.length < 8){
+            binding.etNewPassword.error = "Password baru minimal 8 karakter"
+            isValid = false
+        }
         
         if(confirmPasswordInput.isEmpty()){
             binding.etConfirmPassword.error = "Konfirmasi password harus diisi"

@@ -14,9 +14,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import com.stti.spandet.tools.reduceBitmapToFile
+import com.stti.spandet.tools.rotateImage
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -507,9 +509,28 @@ class ProcessActivity : AppCompatActivity() {
 
     private fun uriToBitmap(uri: Uri): Bitmap? {
         return try {
-            contentResolver.openInputStream(uri)?.use {
+            // First decode the bitmap from the URI
+            val inputBitmap = contentResolver.openInputStream(uri)?.use {
                 BitmapFactory.decodeStream(it)
-            }
+            } ?: return null
+            
+            // Get the input stream again to read EXIF data
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                // Read EXIF orientation
+                val exif = ExifInterface(inputStream)
+                val orientation = exif.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_UNDEFINED
+                )
+                
+                // Rotate bitmap according to EXIF orientation
+                when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(inputBitmap, 90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(inputBitmap, 180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(inputBitmap, 270f)
+                    else -> inputBitmap
+                }
+            } ?: inputBitmap
         } catch (e: Exception) {
             Log.e("UriToBitmap", "Failed to decode bitmap from URI: $uri, Error: ${e.message}")
             null
@@ -584,9 +605,8 @@ class ProcessActivity : AppCompatActivity() {
     }
 
     private fun saveBitmapToFile(bitmap: Bitmap, file: File) {
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-        }
+        // Use the reduceBitmapToFile function to handle orientation and compression
+        reduceBitmapToFile(bitmap, file)
     }
 
     private fun checkLocationPermission() {
@@ -637,13 +657,14 @@ class ProcessActivity : AppCompatActivity() {
                 val address = addresses[0]
                 
                 // Store all address components
-                currentThoroughfare = address.thoroughfare ?: ""
-                currentSubLocality = address.subLocality ?: ""
-                currentLocality = address.locality ?: ""
-                currentSubAdminArea = address.subAdminArea ?: ""
-                currentAdminArea = address.adminArea ?: ""
-                currentPostalCode = address.postalCode ?: ""
-                
+                currentPostalCode = address.postalCode ?: "?"
+                currentAdminArea = address.adminArea ?: "?"
+                currentSubAdminArea = address.subAdminArea ?: currentAdminArea
+                currentLocality = address.locality ?: currentSubAdminArea
+                currentSubLocality = address.subLocality ?: currentLocality
+                currentThoroughfare = address.thoroughfare ?: currentSubLocality
+
+
                 Log.d("Location", "Address found: $currentSubLocality, $currentLocality, $currentAdminArea")
             } else {
                 Log.d("Location", "No address found for coordinates: $latitude, $longitude")
@@ -736,6 +757,8 @@ class ProcessActivity : AppCompatActivity() {
                                 is ResultState.Error -> {
                                     uploadCurrentImageText?.text =
                                         "Gagal mengupload: ${result.errorMessage}"
+
+                                    Toast.makeText(this@ProcessActivity, result.errorMessage, Toast.LENGTH_SHORT).show()
                                     failCount++
                                     uploadProgressBar?.progress = currentImageNumber
 

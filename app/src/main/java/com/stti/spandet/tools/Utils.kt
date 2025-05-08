@@ -79,45 +79,64 @@ fun convertIsoToReadable(isoTime: String): String {
     }
 }
 
-//fun File.reduceFileImage(): File {
-//    val file = this
-//    val bitmap = BitmapFactory.decodeFile(file.path).getRotatedBitmap(file)
-//    return reduceBitmapToFile(bitmap, file)
-//}
+@RequiresApi(Build.VERSION_CODES.Q)
+fun File.reduceFileImage(): File {
+    val file = this
+    val bitmap = BitmapFactory.decodeFile(file.path).getRotatedBitmap(file)
+    return reduceBitmapToFile(bitmap, file)
+}
 
-/** Reduce bitmap size and save to file */
+/** Reduce bitmap size and save to file with proper orientation */
 fun reduceBitmapToFile(bitmap: Bitmap?, file: File): File {
+    // First check and correct orientation if needed
+    val orientedBitmap = bitmap?.let { ensurePortraitOrientation(it) }
+    
+    // Then compress the image
     var compressQuality = 100
     var streamLength: Int
     do {
         val bmpStream = ByteArrayOutputStream()
-        bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, bmpStream)
+        orientedBitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, bmpStream)
         val bmpPicByteArray = bmpStream.toByteArray()
         streamLength = bmpPicByteArray.size
         compressQuality -= 5
     } while (streamLength > MAXIMAL_SIZE)
-    bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, FileOutputStream(file))
+    orientedBitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, FileOutputStream(file))
     return file
 }
 
-//@RequiresApi(Build.VERSION_CODES.Q)
-//fun Bitmap.getRotatedBitmap(file: File): Bitmap? {
-//    val orientation = ExifInterface(file).getAttributeInt(
-//        ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED
-//    )
-//    return when (orientation) {
-//        ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(this, 90F)
-//        ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(this, 180F)
-//        ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(this, 270F)
-//        ExifInterface.ORIENTATION_NORMAL -> this
-//        else -> this
-//    }
-//}
-//
-//fun rotateImage(source: Bitmap, angle: Float): Bitmap? {
-//    val matrix = Matrix()
-//    matrix.postRotate(angle)
-//    return Bitmap.createBitmap(
-//        source, 0, 0, source.width, source.height, matrix, true
-//    )
-//}
+/** Ensure image is in portrait orientation */
+fun ensurePortraitOrientation(bitmap: Bitmap): Bitmap {
+    // If width is greater than height, it's in landscape mode and needs rotation
+    return if (bitmap.width > bitmap.height) {
+        // Rotate 90 degrees to make it portrait
+        val matrix = Matrix()
+        matrix.postRotate(90f)
+        Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    } else {
+        // Already in portrait mode, return as is
+        bitmap
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+fun Bitmap.getRotatedBitmap(file: File): Bitmap? {
+    val orientation = ExifInterface(file).getAttributeInt(
+        ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED
+    )
+    return when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(this, 90F)
+        ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(this, 180F)
+        ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(this, 270F)
+        ExifInterface.ORIENTATION_NORMAL -> this
+        else -> this
+    }
+}
+
+fun rotateImage(source: Bitmap, angle: Float): Bitmap? {
+    val matrix = Matrix()
+    matrix.postRotate(angle)
+    return Bitmap.createBitmap(
+        source, 0, 0, source.width, source.height, matrix, true
+    )
+}
